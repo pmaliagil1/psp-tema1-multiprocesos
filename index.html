@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Web interactiva para estudiar PSP Tema 1: procesos, planificación de CPU y ProcessBuilder en Java, con tests y ejercicios de código.">
+<title>PSP Tema 1 · Multiprocesos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+html,body{height:100%}body{margin:0}[hidden]{display:none!important}
+
+/* Layout: panel lateral fijo con los 6 bloques (como un monitor de procesos) + un bloque visible cada vez */
+:root{
+  --bg:#EEF1F0; --surface:#FFFFFF; --sunk:#E3E8E6; --line:#CBD3D0;
+  --fg:#15211D; --muted:#55635E;
+  --accent:#0B7A60; --accent-soft:#D3ECE4; --accent-fg:#FFFFFF;
+  --code-bg:#14201C; --code-fg:#DCE7E2; --code-com:#7F958D; --code-str:#9FD8A8;
+  --ok:#0B7A60; --ok-soft:#D7EFE6; --bad:#B4233C; --bad-soft:#F7DDE2; --warn:#9A6200; --warn-soft:#F6EAD0;
+  --p1:#C4572A; --p2:#0B7A60; --p3:#5B4FD1; --p4:#B08A00; --p5:#2C6FB0; --idle:#9AA6A2;
+  --display:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1614; --surface:#17211E; --sunk:#1F2B27; --line:#2E3C37;
+  --fg:#E4ECE9; --muted:#97A7A1; --accent:#3CC79F; --accent-soft:#163A30; --accent-fg:#06140F;
+  --code-bg:#0A0F0D; --code-fg:#DCE7E2; --code-com:#6F857D; --code-str:#9FD8A8;
+  --ok:#3CC79F; --ok-soft:#14342A; --bad:#F2778C; --bad-soft:#3A1820; --warn:#E5B04D; --warn-soft:#352812;
+  --p1:#E07A4C; --p2:#3CC79F; --p3:#8F85F0; --p4:#D9B53A; --p5:#5C9FE0; --idle:#4F5D58;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1614; --surface:#17211E; --sunk:#1F2B27; --line:#2E3C37;
+  --fg:#E4ECE9; --muted:#97A7A1; --accent:#3CC79F; --accent-soft:#163A30; --accent-fg:#06140F;
+  --code-bg:#0A0F0D; --code-fg:#DCE7E2; --code-com:#6F857D; --code-str:#9FD8A8;
+  --ok:#3CC79F; --ok-soft:#14342A; --bad:#F2778C; --bad-soft:#3A1820; --warn:#E5B04D; --warn-soft:#352812;
+  --p1:#E07A4C; --p2:#3CC79F; --p3:#8F85F0; --p4:#D9B53A; --p5:#5C9FE0; --idle:#4F5D58;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6}
+.app{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:100%;max-width:1280px;margin:0 auto}
+aside{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow:auto;padding-block:28px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:20px;border-right:1px solid var(--line)}
+.brand{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.brand-title{font-family:var(--display);font-weight:800;font-size:26px;line-height:1.1;margin:6px 0 18px;text-wrap:balance}
+.meter{margin-bottom:22px}
+.meter-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.meter-bar{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;margin-top:6px}
+.meter-fill{height:100%;background:var(--accent);width:0;transition:width .4s}
+nav{display:flex;flex-direction:column;gap:2px}
+nav button{all:unset;cursor:pointer;display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;font-size:14.5px;color:var(--fg)}
+nav button:hover{background:var(--sunk)}
+nav button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+nav button[aria-current="true"]{background:var(--accent-soft);font-weight:600}
+.pid{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.state{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:2px 6px;border-radius:4px;background:var(--sunk);color:var(--muted)}
+.state.run{background:var(--warn-soft);color:var(--warn)}
+.state.done{background:var(--ok-soft);color:var(--ok)}
+.legend{margin-top:22px;font-size:12.5px;color:var(--muted);line-height:1.5}
+main{padding-block:32px 80px;padding-left:max(16px,40px);padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+main > section{max-width:860px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,4.4vw,44px);line-height:1.05;margin:6px 0 10px;text-wrap:balance;letter-spacing:-.01em}
+.lead{font-size:18px;color:var(--muted);max-width:62ch;margin:0 0 28px}
+h2{font-family:var(--display);font-weight:700;font-size:22px;margin:40px 0 12px;display:flex;align-items:center;gap:10px;text-wrap:balance}
+h2 .tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:var(--sunk);color:var(--muted)}
+h3{font-family:var(--display);font-weight:700;font-size:17px;margin:22px 0 6px}
+p,li{max-width:68ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:14px 0}
+.cell{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.cell b{display:block;font-family:var(--display);font-size:16px;margin-bottom:2px}
+.cell span{color:var(--muted);font-size:14.5px}
+.cell.dark{background:var(--code-bg);border-color:var(--code-bg);color:var(--code-fg)}
+.cell.dark span{color:var(--code-com)}
+.note{border-radius:10px;padding:12px 16px;margin:14px 0;font-size:15px;background:var(--warn-soft);color:var(--fg)}
+.note.ok{background:var(--ok-soft)}
+.key{font-weight:600;color:var(--accent)}
+.tbl{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--sunk)}
+tr:last-child td{border-bottom:0}
+td code,p code,li code,.cell code{font-family:var(--mono);font-size:.88em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+.cell.dark code{background:transparent;color:var(--code-str)}
+pre.code{background:var(--code-bg);color:var(--code-fg);font-family:var(--mono);font-size:13.5px;line-height:1.65;padding:16px 18px;border-radius:10px;overflow-x:auto;margin:12px 0}
+pre.code .c{color:var(--code-com)} pre.code .s{color:var(--code-str)}
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.q-head{display:flex;gap:10px;align-items:baseline}
+.q-num{font-family:var(--mono);font-size:12px;color:var(--muted);flex:none}
+.q-text{font-weight:600}
+.opts{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.opt{all:unset;cursor:pointer;display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:var(--bg)}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible{outline:2px solid var(--accent)}
+.opt .l{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:2px}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt[disabled]{cursor:default}
+.expl{margin-top:10px;font-size:14.5px;color:var(--muted)}
+.expl b{color:var(--fg)}
+.quiz-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:13px;color:var(--muted)}
+/* buttons */
+.btn{all:unset;cursor:pointer;font-size:14px;font-weight:600;padding:8px 14px;border-radius:8px;background:var(--accent);color:var(--accent-fg);display:inline-flex;align-items:center;gap:6px}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.btn:hover{filter:brightness(1.07)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+/* code exercises */
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0}
+.ex-title{font-family:var(--display);font-weight:700;font-size:17px}
+.ex-desc{color:var(--muted);font-size:14.5px;margin:4px 0 0}
+pre.gaps{white-space:pre}
+.gap{font:inherit;font-size:13px;background:#ffffff14;color:var(--code-str);border:0;border-bottom:2px dashed var(--code-com);padding:0 3px;border-radius:3px 3px 0 0;outline:none;min-width:3ch}
+.gap:focus{border-bottom-color:var(--accent);background:#ffffff22}
+.gap.ok{border-bottom:2px solid var(--ok);color:#7FE3B5}
+.gap.ko{border-bottom:2px solid var(--bad);color:#FF9DAE}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.status.ok{color:var(--ok)} .status.ko{color:var(--bad)}
+textarea.editor{width:100%;min-height:260px;resize:vertical;background:var(--code-bg);color:var(--code-fg);font-family:var(--mono);font-size:13.5px;line-height:1.6;border:2px solid transparent;border-radius:10px;padding:14px 16px;tab-size:4;margin-top:12px}
+textarea.editor:focus{outline:none;border-color:var(--accent)}
+.checks{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:4px;font-size:14.5px}
+.checks li{display:flex;gap:8px;align-items:baseline}
+.dot{font-family:var(--mono);font-size:12px;width:20px;flex:none;color:var(--muted)}
+.checks li.ok .dot{color:var(--ok)} .checks li.ko .dot{color:var(--bad)}
+details.sol{margin-top:10px}
+details.sol summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent)}
+/* done toggle */
+.done-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:48px;padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.done-bar label{display:flex;gap:10px;align-items:center;font-weight:600;cursor:pointer}
+.done-bar input{width:20px;height:20px;accent-color:var(--accent)}
+/* states diagram */
+.diagram{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin:14px 0}
+.diagram svg{display:block;min-width:620px;width:100%;height:auto}
+.trans{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,input[type=number],input[type=text].in{font:inherit;font-size:14.5px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.verdict{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:15px}
+.verdict.ok{background:var(--ok-soft)} .verdict.ko{background:var(--bad-soft)}
+/* simulator */
+.sim{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0}
+.sim-ctrl{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.sim-ctrl label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+.sim table input{width:70px}
+.gantt{display:flex;height:44px;border-radius:6px;overflow:hidden;margin-top:18px;gap:2px}
+.gantt div{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;font-family:var(--mono);min-width:0;overflow:hidden}
+.ticks{position:relative;height:22px;font-family:var(--mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:4px}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.ticks span:first-child{transform:none}
+.res td,.res th{font-variant-numeric:tabular-nums}
+.res input{width:64px}
+.badge{display:inline-block;font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:4px;background:var(--sunk)}
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding-block:20px 12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  nav{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:6px}
+  nav button{grid-template-columns:auto;white-space:nowrap;border:1px solid var(--line)}
+  nav button .pid,nav button .state{display:none}
+  .legend{display:none}
+  main{padding-left:max(16px,env(safe-area-inset-left,0px))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">PSP · 2.º DAM · IES Rafael Alberti</div>
+  <div class="brand-title">Tema 1<br>Multiprocesos</div>
+  <div class="meter">
+    <div class="meter-row"><span>Progreso</span><span id="pct">0 %</span></div>
+    <div class="meter-bar"><div class="meter-fill" id="fill"></div></div>
+    <div class="meter-row" style="margin-top:6px"><span id="stats">0 aciertos</span></div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="legend">Cada bloque tiene teoría, un test que se corrige al marcar y ejercicios de código. Tu progreso se guarda en este navegador.</div>
+</aside>
+
+<main id="main">
+
+<!-- =============== BLOQUE 1 =============== -->
+<section data-block="b1">
+  <div class="eyebrow">Bloque 1 · Conceptos básicos</div>
+  <h1>Programa, proceso, servicio e hilo</h1>
+  <p class="lead">Los cuatro conceptos sobre los que se construye todo el módulo. Si entiendes la analogía de la cocina, tienes medio tema hecho.</p>
+
+  <h2><span class="tag">Teoría</span> La cocina</h2>
+  <div class="grid">
+    <div class="cell"><b>Receta</b><span>= <strong>programa</strong>: instrucciones guardadas en disco. No hace nada sola.</span></div>
+    <div class="cell"><b>Cocinero</b><span>= <strong>CPU</strong> (un núcleo): sigue los pasos uno a uno.</span></div>
+    <div class="cell"><b>Ingredientes</b><span>= <strong>datos</strong> de entrada del programa.</span></div>
+    <div class="cell dark"><b>Cocinando</b><span>= <strong style="color:var(--code-fg)">proceso</strong>: la receta en marcha, con su PID y su memoria.</span></div>
+  </div>
+  <div class="note">La misma receta cocinada dos veces son <b>dos procesos</b>: dos ventanas del navegador tienen dos PID distintos.</div>
+
+  <h3>Proceso en memoria</h3>
+  <p>Un <span class="key">proceso</span> es un programa en ejecución: el código más todo lo necesario para ejecutarlo. Tiene un <b>PID</b>, su propia memoria (código, datos, heap, pila), ficheros y sockets abiertos, registros de CPU y al menos un hilo.</p>
+
+  <h3>El PCB: la ficha de cada proceso</h3>
+  <p>El sistema operativo guarda la información de cada proceso en su <b>PCB</b> (Process Control Block). Al cambiar de proceso, guarda y carga estos datos:</p>
+  <div class="tbl"><table>
+    <tr><th>Campo</th><th>Para qué sirve</th></tr>
+    <tr><td>PID y PPID</td><td>quién es y quién lo creó</td></tr>
+    <tr><td>Estado</td><td>nuevo, listo, ejecución, bloqueado, terminado</td></tr>
+    <tr><td>Contador de programa</td><td>siguiente instrucción a ejecutar</td></tr>
+    <tr><td>Registros de CPU</td><td>para reanudarlo donde lo dejó</td></tr>
+    <tr><td>Memoria</td><td>dónde están código, datos, heap y pila</td></tr>
+    <tr><td>Ficheros y sockets</td><td>recursos abiertos</td></tr>
+    <tr><td>Usuario y permisos</td><td>contexto de seguridad</td></tr>
+    <tr><td>Prioridad</td><td>datos para el planificador</td></tr>
+  </table></div>
+
+  <h3>PID, PPID y jerarquía</h3>
+  <p>Todo proceso tiene un PID y guarda el <b>PPID</b> (el PID de su padre). Todos descienden del proceso <b>1</b> (<code>systemd</code> o <code>init</code> en Linux). Desde Java:</p>
+<pre class="code">ProcessHandle yo = ProcessHandle.current();
+System.out.println(<span class="s">"Mi PID: "</span> + yo.pid());
+yo.parent().ifPresent(p -&gt;
+    System.out.println(<span class="s">"Mi PPID: "</span> + p.pid()));</pre>
+
+  <h3>Zombis y huérfanos</h3>
+  <div class="grid">
+    <div class="cell"><b>Zombi · ya terminó</b><span>Su padre no ha recogido el código de salida con <code>wait()</code>. No usa CPU pero ocupa un PID. En <code>ps</code> sale con <code>Z</code> o <code>&lt;defunct&gt;</code>.</span></div>
+    <div class="cell"><b>Huérfano · sigue vivo</b><span>Su padre terminó antes. Lo adopta init/systemd (PID 1), que recogerá su salida.</span></div>
+  </div>
+  <div class="note">Un proceso <b>bloqueado para siempre</b> esperando un dato que nunca llega no es un zombi: sigue vivo. Es un error de programación.</div>
+
+  <h3>Servicios (demonios)</h3>
+  <p>Un <span class="key">servicio</span> es un proceso no interactivo que el sistema arranca y controla sin intervención del usuario: sin ventana, suele arrancar con el sistema y da servicio a otros (impresión, red, bases de datos, servidores web).</p>
+<pre class="code"><span class="c"># Windows</span>
+Get-Service | Where-Object Status -eq Running
+<span class="c"># Linux (systemd)</span>
+systemctl list-units --type=service
+systemctl status ssh</pre>
+
+  <h3>Hilos</h3>
+  <p>Un <span class="key">hilo</span> es un flujo de ejecución dentro de un proceso. Los hilos de un proceso <b>comparten memoria y recursos</b>; cada uno tiene su propia pila y su contador de programa. Solo se ejecutan a la vez si hay varios núcleos.</p>
+  <div class="tbl"><table>
+    <tr><th></th><th>Proceso</th><th>Hilo</th></tr>
+    <tr><td>Memoria</td><td>propia y aislada</td><td>compartida</td></tr>
+    <tr><td>Crear</td><td>costoso</td><td>barato</td></tr>
+    <tr><td>Comunicar</td><td>IPC (tuberías, sockets)</td><td>variables compartidas</td></tr>
+    <tr><td>Si falla</td><td>cae él solo</td><td>cae todo el proceso</td></tr>
+  </table></div>
+
+  <h3>Comandos para localizar procesos</h3>
+<pre class="code"><span class="c"># Windows (PowerShell)</span>
+(Get-Process msedge).Count
+Get-CimInstance Win32_Process -Filter <span class="s">"name='msedge.exe'"</span> | Select-Object ProcessId, ParentProcessId
+<span class="c"># Linux / WSL</span>
+ps -ef | grep firefox   <span class="c"># 2.ª columna PID, 3.ª PPID</span>
+pgrep -c firefox        <span class="c"># cuántos hay</span>
+echo $$ $PPID           <span class="c"># PID de mi shell y de su padre</span>
+ps -e | wc -l           <span class="c"># total del equipo</span></pre>
+
+  <h2><span class="tag">Test</span> Comprueba lo que sabes</h2>
+  <div data-quiz="b1"></div>
+
+  <h2><span class="tag">Código</span> Escribe tú</h2>
+  <div data-gaps="g1"></div>
+</section>
+
+<!-- =============== BLOQUE 2 =============== -->
+<section data-block="b2" hidden>
+  <div class="eyebrow">Bloque 2 · Tipos de programación</div>
+  <h1>Concurrente, paralela y distribuida</h1>
+  <p class="lead">Tres formas de hacer varias cosas a la vez, según haya uno o varios núcleos, o varios ordenadores.</p>
+
+  <h2><span class="tag">Teoría</span> Un cocinero o dos</h2>
+  <div class="grid">
+    <div class="cell"><b>Concurrencia · 1 cocinero</b><span>Pica la ensalada, para a remover la sopa y vuelve a picar. Los dos platos avanzan, pero nunca en el mismo instante.</span></div>
+    <div class="cell"><b>Paralelismo · 2 cocineros</b><span>Cada uno hace un plato. Avanzan a la vez de verdad: hacen falta dos núcleos.</span></div>
+  </div>
+  <div class="note ok">La concurrencia es <b>organizar</b> varias tareas; el paralelismo es tener <b>más manos</b> para hacerlas a la vez.</div>
+  <div class="tbl"><table>
+    <tr><th>Término</th><th>Significado</th></tr>
+    <tr><td><b>Concurrencia</b></td><td>varias tareas en curso a la vez; con un núcleo, el SO las alterna cada pocos milisegundos (<b>multiprogramación</b>).</td></tr>
+    <tr><td><b>Paralelismo</b></td><td>varias tareas ejecutándose en el mismo instante en núcleos distintos (<b>multiprocesamiento</b>).</td></tr>
+    <tr><td><b>Multitarea</b></td><td>capacidad del SO de mantener varias tareas en curso, con uno o con varios núcleos.</td></tr>
+  </table></div>
+
+  <h3>Programación distribuida</h3>
+  <p>Varios <b>ordenadores independientes</b>, conectados por red, colaboran como si fueran un solo sistema. No comparten memoria: se comunican con <b>mensajes</b>.</p>
+  <div class="tbl"><table>
+    <tr><th>Ejemplo</th><th>Qué reparte</th></tr>
+    <tr><td>Clúster</td><td>cálculo entre nodos de un centro de datos</td></tr>
+    <tr><td>Cloud (AWS, Azure, GCP)</td><td>servidores y almacenamiento bajo demanda</td></tr>
+    <tr><td>Microservicios</td><td>una aplicación en muchos servicios pequeños</td></tr>
+    <tr><td>Supercomputador</td><td>simulación, meteorología, IA</td></tr>
+  </table></div>
+  <div class="grid">
+    <div class="cell"><b>Ventajas</b><span>Escala añadiendo máquinas y tolera fallos: si cae un nodo, siguen los demás.</span></div>
+    <div class="cell"><b>Inconvenientes</b><span>La red falla y tarda; sincronizar es difícil y hay que proteger los datos que viajan.</span></div>
+  </div>
+
+  <h2><span class="tag">Test</span> ¿Qué tipo es?</h2>
+  <div data-quiz="b2"></div>
+</section>
+
+<!-- =============== BLOQUE 3 =============== -->
+<section data-block="b3" hidden>
+  <div class="eyebrow">Bloque 3 · Estados de un proceso</div>
+  <h1>Cinco estados y seis transiciones</h1>
+  <p class="lead">El ciclo de vida de un proceso, desde que se crea hasta que termina, y quién decide cada cambio.</p>
+
+  <h2><span class="tag">Teoría</span> El diagrama</h2>
+  <div class="diagram">
+  <svg viewBox="0 0 760 270" role="img" aria-label="Diagrama de estados: Nuevo, Listo, Ejecución, Terminado y Bloqueado">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--fg)"/></marker></defs>
+    <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--muted)">
+      <line x1="120" y1="90" x2="198" y2="90" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar)"/>
+      <text x="135" y="78">admitir</text>
+      <line x1="322" y1="80" x2="418" y2="80" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar)"/>
+      <text x="290" y="58">planificador lo elige</text>
+      <line x1="418" y1="102" x2="322" y2="102" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar)"/>
+      <text x="318" y="126">fin del quantum</text>
+      <line x1="542" y1="90" x2="618" y2="90" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar)"/>
+      <text x="553" y="78">termina</text>
+      <polyline points="480,112 480,215 432,215" fill="none" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar)"/>
+      <text x="488" y="170">pide E/S</text>
+      <polyline points="308,215 260,215 260,114" fill="none" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar)"/>
+      <text x="168" y="170">llega la E/S</text>
+    </g>
+    <g font-family="Archivo, sans-serif" font-weight="700" font-size="15" text-anchor="middle">
+      <rect x="10" y="68" width="110" height="44" rx="8" fill="var(--surface)" stroke="var(--line)"/><text x="65" y="95" fill="var(--fg)">Nuevo</text>
+      <rect x="200" y="68" width="120" height="44" rx="8" fill="var(--surface)" stroke="var(--line)"/><text x="260" y="95" fill="var(--fg)">Listo</text>
+      <rect x="420" y="68" width="120" height="44" rx="8" fill="var(--accent)"/><text x="480" y="95" fill="var(--accent-fg)">Ejecución</text>
+      <rect x="620" y="68" width="130" height="44" rx="8" fill="var(--surface)" stroke="var(--line)"/><text x="685" y="95" fill="var(--fg)">Terminado</text>
+      <rect x="310" y="193" width="120" height="44" rx="8" fill="var(--sunk)" stroke="var(--line)"/><text x="370" y="220" fill="var(--fg)">Bloqueado</text>
+    </g>
+  </svg>
+  </div>
+  <ul>
+    <li>Solo hay <b>un proceso en ejecución por núcleo</b>.</li>
+    <li>Los <b>listos</b> esperan CPU; los <b>bloqueados</b> esperan un suceso (disco, red, teclado).</li>
+    <li><b>Un bloqueado nunca pasa directo a ejecución</b>: vuelve a Listo y espera turno.</li>
+    <li>Solo se bloquea quien se está ejecutando (Listo → Bloqueado es imposible).</li>
+    <li>Un terminado no revive: habría que crear otro proceso.</li>
+  </ul>
+
+  <h2><span class="tag">Práctica</span> ¿Transición válida?</h2>
+  <p>Elige un estado de origen y uno de destino y comprueba si la transición existe.</p>
+  <div class="ex">
+    <div class="trans">
+      <select id="tFrom" aria-label="Estado origen"></select><span>→</span>
+      <select id="tTo" aria-label="Estado destino"></select>
+      <button class="btn" id="tBtn">Comprobar</button>
+    </div>
+    <div id="tOut"></div>
+  </div>
+
+  <h2><span class="tag">Test</span> Estados</h2>
+  <div data-quiz="b3"></div>
+</section>
+
+<!-- =============== BLOQUE 4 =============== -->
+<section data-block="b4" hidden>
+  <div class="eyebrow">Bloque 4 · Planificación de la CPU</div>
+  <h1>Quién usa cada núcleo, y cuándo</h1>
+  <p class="lead">El planificador decide qué proceso pasa a ejecución. Aquí está la parte de cálculo del tema: diagramas de Gantt, tiempos de espera y de retorno.</p>
+
+  <h2><span class="tag">Teoría</span> Planificadores y políticas</h2>
+  <div class="grid">
+    <div class="cell"><b>A largo plazo</b><span>Decide qué procesos nuevos <strong>entran</strong> en la cola de listos. Se ejecuta poco; casi no existe en ordenadores personales.</span></div>
+    <div class="cell"><b>A corto plazo</b><span>Elige qué proceso de la cola de listos <strong>pasa a ejecución</strong>. Actúa cada pocos milisegundos: debe ser muy rápido.</span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Política</th><th>Cuándo cambia de proceso</th></tr>
+    <tr><td><b>Cooperativa</b></td><td>solo si el proceso se bloquea o termina (sin expropiación)</td></tr>
+    <tr><td><b>Apropiativa</b></td><td>expulsa al proceso si llega uno más prioritario</td></tr>
+    <tr><td><b>Tiempo compartido</b></td><td>cada proceso tiene un <b>quantum</b>; al agotarlo, cede la CPU</td></tr>
+  </table></div>
+
+  <h3>Algoritmos</h3>
+  <div class="tbl"><table>
+    <tr><th>Algoritmo</th><th>Cómo elige</th><th>Riesgo</th></tr>
+    <tr><td>FCFS (FIFO)</td><td>por orden de llegada</td><td>los cortos esperan detrás de los largos</td></tr>
+    <tr><td>SJF</td><td>el que necesita menos CPU</td><td>inanición de los largos</td></tr>
+    <tr><td>Prioridades</td><td>el de mayor prioridad</td><td>inanición de los de baja prioridad</td></tr>
+    <tr><td>Round Robin</td><td>turnos de un quantum, en círculo</td><td>quantum mal elegido</td></tr>
+    <tr><td>Colas multinivel</td><td>varias colas con distinto algoritmo</td><td>complejidad</td></tr>
+  </table></div>
+  <div class="note"><b>Inanición</b>: un proceso listo que nunca llega a ejecutarse. Se evita con <b>envejecimiento (aging)</b>: la prioridad sube con el tiempo de espera.</div>
+
+  <h3>Fórmulas que tienes que saber</h3>
+  <div class="grid">
+    <div class="cell"><b>Retorno</b><span>fin − llegada</span></div>
+    <div class="cell"><b>Espera</b><span>retorno − ráfaga</span></div>
+    <div class="cell"><b>Media</b><span>suma ÷ nº de procesos</span></div>
+  </div>
+  <p>En Round Robin con llegadas, el <b>orden de la cola manda</b>: un proceso que llega durante un quantum se pone en la cola <b>antes</b> que el proceso que acaba de agotar su quantum.</p>
+
+  <h3>El cambio de contexto</h3>
+  <p>Al cambiar de proceso, el SO guarda el estado del saliente en su PCB y restaura el del entrante. Es tiempo en que la CPU no hace trabajo útil: por eso un quantum demasiado pequeño es mala idea.</p>
+
+  <h2><span class="tag">Simulador</span> Dibuja el Gantt</h2>
+  <p>Carga un ejercicio de la presentación o mete tus propios procesos. Activa <b>Modo práctica</b> para calcularlo tú primero y comprobarlo después.</p>
+  <div class="sim">
+    <div class="sim-ctrl">
+      <label>Algoritmo<select id="sAlg"><option value="fcfs">FCFS</option><option value="sjf">SJF (no apropiativo)</option><option value="rr">Round Robin</option></select></label>
+      <label>Quantum (ms)<input type="number" id="sQ" min="1" value="3"></label>
+      <label>Ejercicio<select id="sPreset"><option value="">—</option><option value="e5">Ej. 5 · P1 8, P2 4, P3 1</option><option value="e6">Ej. 6 · RR q=2</option><option value="e6b" selected>Ej. 6B · RR q=3 con llegadas</option></select></label>
+      <label style="flex-direction:row;align-items:center;gap:6px;font-size:14px;font-family:var(--body);color:var(--fg)"><input type="checkbox" id="sPractice"> Modo práctica</label>
+    </div>
+    <div class="tbl"><table id="sProcs"><thead><tr><th>Proceso</th><th>Ráfaga</th><th>Llegada</th><th></th></tr></thead><tbody></tbody></table></div>
+    <div class="row"><button class="btn ghost" id="sAdd">+ Añadir proceso</button><button class="btn" id="sRun">Calcular</button></div>
+    <div id="sOut"></div>
+  </div>
+
+  <h2><span class="tag">Test</span> Planificación</h2>
+  <div data-quiz="b4"></div>
+</section>
+
+<!-- =============== BLOQUE 5 =============== -->
+<section data-block="b5" hidden>
+  <div class="eyebrow">Bloque 5 · Procesos en Java</div>
+  <h1>ProcessBuilder configura, Process controla</h1>
+  <p class="lead">Lo que haces en la terminal con <code>java HolaMundo</code>, ahora lo hará tu programa. Todo con JDK 21 o superior.</p>
+
+  <h2><span class="tag">Teoría</span> Las dos clases</h2>
+  <div class="grid">
+    <div class="cell"><b>ProcessBuilder</b><span>Configura el proceso antes de lanzarlo: <code>command()</code>, <code>directory()</code>, <code>environment()</code>, redirecciones. Lo lanza con <code>start()</code>.</span></div>
+    <div class="cell"><b>Process</b><span>El proceso hijo ya en marcha: <code>pid()</code>, <code>waitFor()</code>, <code>exitValue()</code>, <code>destroy()</code>, flujos de entrada y salida.</span></div>
+  </div>
+  <div class="note"><b>Ojo:</b> <code>start()</code> es de <b>ProcessBuilder</b>, no de Process. <code>Runtime.exec(String)</code> está obsoleto desde Java 18. Si el ejecutable no existe o no tiene permisos, <code>start()</code> lanza <b>IOException</b>.</div>
+
+  <h3>Lanzar y esperar</h3>
+<pre class="code">ProcessBuilder pb = <b>new</b> ProcessBuilder(<span class="s">"ping"</span>, <span class="s">"-c"</span>, <span class="s">"3"</span>, <span class="s">"8.8.8.8"</span>); <span class="c">// Windows: "-n"</span>
+pb.directory(<b>new</b> File(System.getProperty(<span class="s">"user.home"</span>))); <span class="c">// carpeta de trabajo</span>
+pb.environment().put(<span class="s">"MODO"</span>, <span class="s">"prueba"</span>);  <span class="c">// variable de entorno</span>
+pb.inheritIO();                           <span class="c">// el hijo escribe en nuestra consola</span>
+Process p = pb.start();                   <span class="c">// puede lanzar IOException</span>
+System.out.println(<span class="s">"PID del hijo: "</span> + p.pid());
+<b>int</b> codigo = p.waitFor();                <span class="c">// bloquea hasta que termina (0 = bien)</span></pre>
+  <div class="tbl"><table>
+    <tr><th>Excepción / regla</th><th>Qué significa</th></tr>
+    <tr><td><code>IOException</code></td><td><code>start()</code> no pudo crear el proceso: no existe o sin permisos</td></tr>
+    <tr><td><code>InterruptedException</code></td><td>alguien interrumpió al padre mientras esperaba en <code>waitFor()</code>. Restablece con <code>Thread.currentThread().interrupt()</code></td></tr>
+    <tr><td>Comando troceado</td><td>el programa y cada argumento por separado. Nunca <code>"ping -c 3 8.8.8.8"</code> en una sola cadena</td></tr>
+  </table></div>
+
+  <h3>Padre e hijo: argumentos de ida, código de salida de vuelta</h3>
+  <p>El padre pasa datos al hijo como <b>argumentos</b> (llegan como texto en <code>args</code>, hay que convertirlos). El hijo responde con <code>System.exit(n)</code>, y el padre recibe <code>n</code> como valor de <code>waitFor()</code>.</p>
+
+  <h3>Abrir una web según el sistema</h3>
+  <div class="tbl"><table>
+    <tr><th>Sistema</th><th>Comando para ProcessBuilder</th></tr>
+    <tr><td>macOS</td><td><code>"open", url</code></td></tr>
+    <tr><td>Linux</td><td><code>"xdg-open", url</code></td></tr>
+    <tr><td>Windows</td><td><code>"cmd", "/c", "start", "", url</code></td></tr>
+  </table></div>
+  <p>En Windows, <code>start</code> es una orden interna de <code>cmd</code>. El <code>""</code> vacío es el título de la ventana: sin él, <code>start</code> toma la URL como título. El navegador que se abre <b>no es hijo nuestro</b>: nuestro hijo es <code>open</code>/<code>cmd</code>, que termina enseguida con código 0.</p>
+
+  <h2><span class="tag">Código</span> Ejercicio 7 · El cocinero y el pinche</h2>
+  <div data-gaps="g2"></div>
+  <div data-gaps="g3"></div>
+
+  <h2><span class="tag">Código</span> Ejercicio 8 · Escríbelo desde cero</h2>
+  <div data-free="f1"></div>
+
+  <h2><span class="tag">Test</span> Procesos en Java</h2>
+  <div data-quiz="b5"></div>
+</section>
+
+<!-- =============== BLOQUE 6 =============== -->
+<section data-block="b6" hidden>
+  <div class="eyebrow">Bloque 6 · Comunicar y controlar</div>
+  <h1>Hablar con el hijo, esperarlo y terminarlo</h1>
+  <p class="lead">Leer lo que escribe el hijo, enviarle datos, encadenar procesos, observarlos y matarlos.</p>
+
+  <h2><span class="tag">Teoría</span> Tres flujos vistos desde el padre</h2>
+  <div class="tbl"><table>
+    <tr><th>Flujo del hijo</th><th>El padre lo usa con</th><th>Dirección</th></tr>
+    <tr><td>stdin (entrada)</td><td><code>getOutputStream()</code> / <code>outputWriter()</code></td><td>padre → hijo</td></tr>
+    <tr><td>stdout (salida)</td><td><code>getInputStream()</code> / <code>inputReader()</code></td><td>hijo → padre</td></tr>
+    <tr><td>stderr (errores)</td><td><code>getErrorStream()</code> / <code>errorReader()</code></td><td>hijo → padre</td></tr>
+  </table></div>
+  <div class="note"><b>Truco para el examen:</b> <code>getInputStream()</code> lee la <b>salida</b> del hijo. Los nombres están desde el punto de vista del padre: lo que para el padre es una entrada, para el hijo es su salida.</div>
+  <p>Por defecto los flujos van a <b>tuberías (PIPE)</b>. Si el padre no las lee y el hijo escribe mucho, el búfer se llena y el hijo <b>se bloquea</b>. Por eso: <b>lee primero, <code>waitFor()</code> después</b>.</p>
+
+  <h3>Leer la salida línea a línea</h3>
+<pre class="code">ProcessBuilder pb = <b>new</b> ProcessBuilder(<span class="s">"java"</span>, <span class="s">"-version"</span>);
+pb.redirectErrorStream(<b>true</b>);   <span class="c">// stderr se mezcla con stdout</span>
+Process p = pb.start();
+<b>try</b> (BufferedReader br = p.inputReader(StandardCharsets.UTF_8)) {
+    String linea;
+    <b>while</b> ((linea = br.readLine()) != <b>null</b>) {  <span class="c">// null = el hijo cerró</span>
+        System.out.println(<span class="s">"[hijo] "</span> + linea);
+    }
+}
+System.out.println(<span class="s">"Código: "</span> + p.waitFor());  <span class="c">// DESPUÉS de leer</span></pre>
+  <p><code>java -version</code> escribe en <b>stderr</b>: sin <code>redirectErrorStream(true)</code> no leerías nada por <code>getInputStream()</code>.</p>
+
+  <h3>Redirigir en lugar de leer</h3>
+  <div class="tbl"><table>
+    <tr><th>Método</th><th>Efecto</th></tr>
+    <tr><td><code>inheritIO()</code></td><td>los tres flujos a la consola del padre</td></tr>
+    <tr><td><code>redirectOutput(File)</code></td><td>la salida a un fichero (lo sobrescribe)</td></tr>
+    <tr><td><code>Redirect.appendTo(f)</code></td><td>la salida al final de un fichero</td></tr>
+    <tr><td><code>redirectInput(File)</code></td><td>la entrada se lee de un fichero</td></tr>
+    <tr><td><code>redirectError(...)</code></td><td>los errores a otro destino</td></tr>
+    <tr><td><code>Redirect.DISCARD</code></td><td>descarta la salida (Java 9+)</td></tr>
+  </table></div>
+
+  <h3>Enviar datos al hijo</h3>
+<pre class="code">Process p = <b>new</b> ProcessBuilder(<span class="s">"sort"</span>).start();
+<b>try</b> (BufferedWriter w = p.outputWriter()) {
+    w.write(<span class="s">"pera\nmanzana\nkiwi\n"</span>);
+}   <span class="c">// cerrar = fin de datos para el hijo</span>
+System.out.print(<b>new</b> String(p.getInputStream().readAllBytes()));</pre>
+  <p>Hay que <b>cerrar el flujo</b>: si no, el hijo sigue esperando datos y no termina nunca.</p>
+
+  <h3>Esperar con límite y terminar</h3>
+  <div class="tbl"><table>
+    <tr><th>Método</th><th>Qué hace</th></tr>
+    <tr><td><code>waitFor(t, unidad)</code></td><td>espera como mucho ese tiempo; <code>true</code> si terminó</td></tr>
+    <tr><td><code>isAlive()</code></td><td><code>true</code> si el hijo sigue en marcha</td></tr>
+    <tr><td><code>destroy()</code></td><td>pide terminar (SIGTERM): puede cerrar ordenadamente</td></tr>
+    <tr><td><code>destroyForcibly()</code></td><td>lo mata sin avisar (SIGKILL)</td></tr>
+    <tr><td><code>exitValue()</code></td><td>código de salida; excepción si aún no terminó</td></tr>
+    <tr><td><code>onExit()</code></td><td><code>CompletableFuture</code> que se completa al terminar</td></tr>
+  </table></div>
+
+  <h3>ProcessHandle: el Administrador de tareas desde Java</h3>
+<pre class="code">ProcessHandle.allProcesses()
+    .filter(ph -&gt; ph.info().command().isPresent())
+    .limit(10)
+    .forEach(ph -&gt; System.out.println(ph.pid() + <span class="s">" "</span> + ph.info().command().get()));</pre>
+  <p><code>info()</code> da orden, argumentos, usuario, hora de inicio y tiempo de CPU. <code>children()</code> y <code>descendants()</code> recorren el árbol (Java 9+).</p>
+
+  <h3>Mecanismos IPC</h3>
+  <div class="tbl"><table>
+    <tr><th>Mecanismo</th><th>Cómo funciona</th><th>En Java</th></tr>
+    <tr><td>Tuberías</td><td>flujo de bytes entre padre e hijo</td><td>flujos de Process, <code>startPipeline</code></td></tr>
+    <tr><td>Ficheros</td><td>uno escribe y otro lee</td><td><code>java.nio.file.Files</code></td></tr>
+    <tr><td>Sockets</td><td>comunicación por red, local o remota</td><td><code>Socket</code>, <code>ServerSocket</code> (Tema 3)</td></tr>
+    <tr><td>Memoria compartida</td><td>zona mapeada por ambos</td><td><code>FileChannel.map</code></td></tr>
+    <tr><td>Señales</td><td>avisos del SO</td><td><code>destroy()</code>, ganchos de cierre</td></tr>
+  </table></div>
+
+  <h3>Encadenar procesos: startPipeline</h3>
+<pre class="code"><span class="c">// Equivale a: ps -e | grep java | wc -l</span>
+List&lt;Process&gt; tuberia = ProcessBuilder.startPipeline(List.of(
+    <b>new</b> ProcessBuilder(<span class="s">"ps"</span>, <span class="s">"-e"</span>),
+    <b>new</b> ProcessBuilder(<span class="s">"grep"</span>, <span class="s">"java"</span>),
+    <b>new</b> ProcessBuilder(<span class="s">"wc"</span>, <span class="s">"-l"</span>)));
+Process ultimo = tuberia.get(tuberia.size() - 1);</pre>
+  <p>La salida de cada proceso se conecta a la entrada del siguiente sin pasar por Java y sin usar la shell.</p>
+
+  <h2><span class="tag">Código</span> Rellena los huecos</h2>
+  <div data-gaps="g4"></div>
+  <div data-gaps="g5"></div>
+
+  <h2><span class="tag">Código</span> Escríbelo desde cero</h2>
+  <div data-free="f2"></div>
+
+  <h2><span class="tag">Test</span> Comunicar y controlar</h2>
+  <div data-quiz="b6"></div>
+</section>
+
+<!-- =============== PRÁCTICA FINAL =============== -->
+<section data-block="b7" hidden>
+  <div class="eyebrow">Práctica del tema</div>
+  <h1>El lanzador de tareas</h1>
+  <p class="lead">Un menú de consola en Java que junta todo el tema. Ve marcando cada requisito cuando lo tengas funcionando.</p>
+
+  <h2><span class="tag">Requisitos</span> Lista de comprobación</h2>
+  <div class="ex" id="checklist"></div>
+
+  <h2><span class="tag">Pistas</span> Qué usar en cada punto</h2>
+  <div class="tbl"><table>
+    <tr><th>Requisito</th><th>Piezas del tema</th></tr>
+    <tr><td>1 · Lanzar app portable</td><td><code>os.name</code> para elegir comando (<code>notepad</code>/<code>gedit</code>, <code>calc</code>/<code>gnome-calculator</code>, el navegador como en el ejercicio 8)</td></tr>
+    <tr><td>2 · Guardar salida en log</td><td><code>LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)</code> da <code>AAAAMMDD</code>; <code>redirectOutput(Redirect.appendTo(...))</code> + <code>redirectErrorStream(true)</code>. Redirigir a fichero evita el bloqueo con salidas grandes</td></tr>
+    <tr><td>3 · Listar procesos</td><td>guarda cada <code>Process</code> en un <code>Map&lt;Long, Process&gt;</code>; usa <code>isAlive()</code> y <code>p.info().totalCpuDuration()</code></td></tr>
+    <tr><td>4 · Terminar por PID</td><td><code>destroy()</code>, luego <code>waitFor(3, TimeUnit.SECONDS)</code>; si devuelve <code>false</code>, <code>destroyForcibly()</code></td></tr>
+    <tr><td>5 · Al salir</td><td>recorre el mapa y termina los que sigan con <code>isAlive()</code>; opcionalmente un <code>Runtime.getRuntime().addShutdownHook(...)</code></td></tr>
+  </table></div>
+  <div class="note">Se valora: funciona en Windows y Linux · no se bloquea con salidas grandes · controla errores de lanzamiento · código limpio. Entrega: proyecto Maven o Gradle y un README con capturas.</div>
+
+  <h2><span class="tag">Código</span> Esqueleto para empezar</h2>
+  <div data-free="f3"></div>
+</section>
+
+</main>
+</div>
+
+<script>
+/* ---------- datos ---------- */
+const BLOCKS=[
+ {id:"b1",name:"Programa, proceso, hilo"},
+ {id:"b2",name:"Concurrente y paralela"},
+ {id:"b3",name:"Estados de un proceso"},
+ {id:"b4",name:"Planificación de CPU"},
+ {id:"b5",name:"Procesos en Java"},
+ {id:"b6",name:"Comunicar y controlar"},
+ {id:"b7",name:"Práctica final"}];
+
+const QUIZ={
+b1:[
+ {q:"¿Qué es exactamente un proceso?",o:["El fichero ejecutable guardado en disco","Un programa en ejecución, con PID, memoria propia y al menos un hilo","Cualquier programa que no tiene ventana","Un núcleo de la CPU"],a:1,e:"El fichero en disco es el programa (la receta). El proceso es la receta en marcha."},
+ {q:"Abres dos ventanas del mismo navegador. ¿Cuántos programas y procesos hay (como mínimo)?",o:["1 programa y 1 proceso","2 programas y 2 procesos","1 programa y 2 procesos","2 programas y 1 proceso"],a:2,e:"La misma receta cocinada dos veces: un solo programa, dos procesos con PID distintos."},
+ {q:"¿Qué es el PPID?",o:["El PID del proceso padre","La prioridad del proceso","El PID del proceso 1","El puerto que usa el proceso"],a:0,e:"Cada proceso guarda el PID de su padre. Todos descienden del proceso 1."},
+ {q:"Un proceso ha terminado pero su padre no ha recogido su código de salida con wait(). Es un…",o:["Huérfano","Servicio","Zombi","Proceso bloqueado"],a:2,e:"El zombi ya terminó, no usa CPU, pero sigue ocupando un PID (Z o <defunct> en ps)."},
+ {q:"¿Quién adopta a un proceso huérfano?",o:["Nadie: muere con su padre","El proceso con PID 1 (init / systemd)","El usuario que lo lanzó","El planificador a largo plazo"],a:1,e:"init/systemd lo adopta y recogerá su código de salida cuando termine."},
+ {q:"¿Qué comparten los hilos de un mismo proceso?",o:["Nada, cada uno tiene su memoria","La pila y el contador de programa","La memoria y los recursos del proceso","Solo los ficheros abiertos"],a:2,e:"Comparten memoria y recursos; cada hilo tiene su propia pila y su contador de programa."},
+ {q:"La tarea de un editor que guarda automáticamente cada minuto mientras escribes es…",o:["Un programa","Un proceso independiente","Un servicio","Un hilo"],a:3,e:"Trabaja con el mismo documento en memoria que el resto del editor: es un hilo."},
+ {q:"sshd acepta conexiones aunque nadie haya iniciado sesión. Es…",o:["Un hilo","Un servicio (demonio)","Un programa","Un proceso zombi"],a:1,e:"Segundo plano, sin usuario y controlado por el sistema: un servicio."},
+ {q:"¿Qué estructura guarda el SO para cada proceso con su PID, estado, registros y memoria?",o:["La pila","El heap","El PCB","El quantum"],a:2,e:"El PCB (Process Control Block). Se guarda y se carga en cada cambio de contexto."}],
+b2:[
+ {q:"Con un solo núcleo, ¿puede haber concurrencia?",o:["No, hacen falta varios núcleos","Sí: el SO alterna las tareas cada pocos milisegundos","Solo si son hilos","Solo en programación distribuida"],a:1,e:"Eso es la multiprogramación. Lo que no puede haber con un núcleo es paralelismo real."},
+ {q:"¿Qué hace falta para que haya paralelismo de verdad?",o:["Un quantum pequeño","Varios núcleos (o procesadores)","Una red","Un sistema operativo de tiempo compartido"],a:1,e:"Dos cocineros: dos tareas en el mismo instante en núcleos distintos."},
+ {q:"En programación distribuida, los nodos se comunican mediante…",o:["Memoria compartida","Variables globales","Mensajes por red","El PCB"],a:2,e:"Son ordenadores independientes: no comparten memoria."},
+ {q:"Exportar un vídeo 4K usando todos los núcleos del portátil es programación…",o:["Concurrente","Paralela","Distribuida","Cooperativa"],a:1,e:"Los fotogramas se reparten entre núcleos del mismo equipo."},
+ {q:"Un servidor web que atiende a 500 usuarios a la vez es sobre todo…",o:["Solo paralela","Concurrente + distribuida","Solo distribuida","Ninguna"],a:1,e:"Un hilo por petición (concurrente) y clientes remotos (distribuida)."},
+ {q:"Pagar con el móvil en una tienda (TPV ↔ pasarela ↔ banco) es…",o:["Distribuida","Paralela","Concurrente","Multiprogramación"],a:0,e:"TPV, pasarela y banco están en máquinas distintas."},
+ {q:"Un inconveniente de la programación distribuida es…",o:["No escala","Si cae un nodo cae todo","La red falla y tarda, y sincronizar es difícil","Necesita un solo núcleo"],a:2,e:"A cambio escala añadiendo máquinas y tolera fallos de nodos."}],
+b3:[
+ {q:"¿Cuántos procesos pueden estar en Ejecución a la vez en una CPU de 4 núcleos?",o:["1","4","Ilimitados","Depende del quantum"],a:1,e:"Uno por núcleo."},
+ {q:"Un proceso pide leer del disco. ¿A qué estado pasa?",o:["Listo","Terminado","Bloqueado","Nuevo"],a:2,e:"Ejecución → Bloqueado: espera un suceso (la E/S)."},
+ {q:"Llega el dato del disco que esperaba un proceso bloqueado. ¿A qué estado pasa?",o:["Ejecución","Listo","Terminado","Sigue bloqueado"],a:1,e:"Nunca pasa directo a Ejecución: vuelve a Listo y espera turno."},
+ {q:"¿Qué provoca la transición Ejecución → Listo?",o:["Que pida E/S","Que termine","Fin del quantum o expropiación","Que llegue la E/S"],a:2,e:"El planificador le quita la CPU aunque podría seguir."},
+ {q:"¿Es posible Listo → Bloqueado?",o:["Sí, si pide E/S","No: solo se bloquea quien se está ejecutando","Sí, si lo decide el planificador a largo plazo","Solo en Linux"],a:1,e:"Para pedir E/S hay que estar ejecutando instrucciones."},
+ {q:"¿Qué esperan los procesos en estado Listo?",o:["Un suceso de E/S","La CPU","Que su padre haga wait()","Ser admitidos"],a:1,e:"Los listos esperan CPU; los bloqueados esperan un suceso."}],
+b4:[
+ {q:"¿Qué planificador actúa cada pocos milisegundos?",o:["El de largo plazo","El de corto plazo","Ambos","Ninguno"],a:1,e:"El de corto plazo elige qué proceso listo pasa a ejecución; por eso debe ser muy rápido."},
+ {q:"En la política cooperativa, el proceso cede la CPU…",o:["Al agotar su quantum","Cuando llega uno más prioritario","Solo si se bloquea o termina","Cada 1 ms"],a:2,e:"Sin expropiación: nadie le quita la CPU."},
+ {q:"¿Qué algoritmo minimiza el tiempo de espera medio?",o:["FCFS","SJF","Round Robin","Prioridades"],a:1,e:"SJF, pero necesita conocer la duración y puede dejar sin CPU a los largos."},
+ {q:"¿Cómo se evita la inanición?",o:["Con un quantum mayor","Con envejecimiento (aging)","Con FCFS","Aumentando los núcleos"],a:1,e:"La prioridad sube con el tiempo de espera."},
+ {q:"¿Qué pasa si el quantum es demasiado pequeño?",o:["Se parece a FCFS","Hay demasiados cambios de contexto y se pierde tiempo útil","Los procesos largos nunca terminan","Nada"],a:1,e:"El cambio de contexto es tiempo en que la CPU no hace trabajo útil. Con quantum muy grande, RR se parece a FCFS."},
+ {q:"Ej. 5 con FCFS (P1 8, P2 4, P3 1, todos en 0). ¿Espera media?",o:["2 ms","5,67 ms","6,67 ms","13 ms"],a:2,e:"Esperas 0 + 8 + 12 = 20 → 20 / 3 = 6,67 ms."},
+ {q:"Mismo ejercicio con SJF. ¿Espera media?",o:["2 ms","4 ms","6,67 ms","1 ms"],a:0,e:"Orden P3, P2, P1: esperas 0 + 1 + 5 = 6 → 2 ms."},
+ {q:"Fórmula del tiempo de espera de un proceso:",o:["fin − llegada","retorno − ráfaga","fin − ráfaga − quantum","llegada − fin"],a:1,e:"Retorno = fin − llegada; espera = retorno − ráfaga."}],
+b5:[
+ {q:"¿De qué clase es el método start()?",o:["Process","Runtime","ProcessBuilder","ProcessHandle"],a:2,e:"ProcessBuilder configura y lanza; start() devuelve un Process."},
+ {q:"¿Qué excepción lanza start() si el ejecutable no existe?",o:["InterruptedException","IOException","FileNotFoundException","IllegalStateException"],a:1,e:"IOException: no pudo crear el proceso."},
+ {q:"¿Cuál es la forma correcta de crear el comando?",o:["new ProcessBuilder(\"ping -c 3 8.8.8.8\")","new ProcessBuilder(\"ping\", \"-c\", \"3\", \"8.8.8.8\")","Runtime.exec(\"ping -c 3 8.8.8.8\")","new Process(\"ping\", \"-c\", \"3\")"],a:1,e:"Troceado: programa y cada argumento por separado. Runtime.exec(String) está obsoleto desde Java 18."},
+ {q:"¿Qué devuelve p.waitFor()?",o:["El PID del hijo","El código de salida del hijo","true si terminó","La salida del hijo"],a:1,e:"Bloquea hasta que el hijo termina y devuelve su código (0 = bien). La versión con tiempo devuelve boolean."},
+ {q:"¿Cómo devuelve el pinche (hijo) su resultado al cocinero (padre) en el ejercicio 7?",o:["Con return en el main","Con System.exit(n)","Escribiendo en args","Con una variable static"],a:1,e:"System.exit(n) termina el proceso y entrega n al padre."},
+ {q:"¿Qué hace pb.inheritIO()?",o:["Copia las variables de entorno","Conecta los flujos del hijo a la consola del padre","Hereda el PID del padre","Hace que el hijo herede la prioridad"],a:1,e:"Así vemos en nuestra consola lo que escribe el hijo."},
+ {q:"Para abrir una URL en Windows, ¿por qué se pone un \"\" antes de la url?",o:["Es obligatorio en Java","Es el título de la ventana: sin él, start toma la URL como título","Para escapar los caracteres","Para que no se abra una consola"],a:1,e:"\"cmd\", \"/c\", \"start\", \"\", url."},
+ {q:"Abres una web con \"open\" en macOS. ¿Quién es el proceso hijo de tu programa Java?",o:["El navegador","open","No hay hijo","launchd"],a:1,e:"open pide al sistema abrir la URL y termina con código 0. El navegador no es hijo nuestro."},
+ {q:"En el catch de InterruptedException conviene…",o:["Ignorarla","Llamar a Thread.currentThread().interrupt()","Llamar a System.exit(1)","Volver a llamar a waitFor()"],a:1,e:"Restablece el estado de interrupción del hilo."}],
+b6:[
+ {q:"¿Con qué método lee el padre la SALIDA estándar del hijo?",o:["getOutputStream()","getInputStream()","getErrorStream()","outputWriter()"],a:1,e:"Los nombres son desde el punto de vista del padre: para él es una entrada."},
+ {q:"¿Con qué método envía el padre datos a la ENTRADA del hijo?",o:["getInputStream()","inputReader()","getOutputStream() / outputWriter()","redirectInput()"],a:2,e:"Escribe en la entrada estándar del hijo como si fuera el teclado."},
+ {q:"Lees la salida de \"java -version\" con getInputStream() y no sale nada. ¿Por qué?",o:["Porque falta waitFor()","Porque escribe en stderr: falta redirectErrorStream(true)","Porque java no tiene salida","Porque hay que usar inheritIO()"],a:1,e:"java -version escribe en stderr."},
+ {q:"Envías datos al hijo con outputWriter() y el hijo no termina nunca. ¿Qué falta?",o:["Cerrar el flujo","Llamar a destroy()","Un flush cada línea","redirectErrorStream(true)"],a:0,e:"Cerrar el flujo es la señal de fin de datos para el hijo."},
+ {q:"¿Por qué hay que leer la salida ANTES de waitFor()?",o:["Por estilo","Porque si el búfer de la tubería se llena, el hijo se bloquea y waitFor() no vuelve nunca","Porque waitFor() borra la salida","No importa el orden"],a:1,e:"El hijo espera a que el padre lea; el padre espera a que el hijo termine: bloqueo."},
+ {q:"Diferencia entre destroy() y destroyForcibly():",o:["Ninguna","destroy pide terminar (SIGTERM); destroyForcibly lo mata sin avisar (SIGKILL)","destroy solo funciona en Windows","destroyForcibly mata también al padre"],a:1,e:"Primero se pide con educación; si no responde, a la fuerza."},
+ {q:"p.waitFor(5, TimeUnit.SECONDS) devuelve…",o:["El código de salida","true si el hijo terminó en ese tiempo","El tiempo que tardó","Nada (void)"],a:1,e:"Versión con límite: boolean."},
+ {q:"¿Qué hace ProcessBuilder.startPipeline(...)?",o:["Lanza los procesos uno detrás de otro, esperando cada uno","Conecta la salida de cada proceso con la entrada del siguiente, sin shell","Crea hilos","Redirige todo a un fichero"],a:1,e:"Equivale a ps -e | grep java | wc -l."},
+ {q:"¿Qué método llamas sobre el Process si aún no ha terminado y da excepción?",o:["waitFor()","isAlive()","exitValue()","pid()"],a:2,e:"exitValue() lanza IllegalThreadStateException si el hijo sigue vivo."}]
+};
+
+/* Huecos: ⟦respuesta|alternativa⟧ */
+const GAPS={
+g1:{t:"Muestra tu PID y el de tu padre",d:"Completa el código del bloque 1 para imprimir el PID del proceso actual y el de su padre.",code:
+`ProcessHandle yo = ProcessHandle.⟦current⟧();
+System.out.println("Mi PID: " + yo.⟦pid⟧());
+yo.⟦parent⟧().ifPresent(p ->
+    System.out.println("Mi PPID: " + p.pid()));`},
+g2:{t:"Pinche.java (hijo)",d:"Recibe dos cantidades, las suma y devuelve 0 si caben en la olla de 1000 g o 1 si se pasan.",code:
+`public class Pinche {
+    static final int CAPACIDAD_OLLA = 1000; // gramos
+
+    public static void main(String[] args) {
+        int ing1 = Integer.⟦parseInt⟧(args[⟦0⟧]);
+        int ing2 = Integer.parseInt(args[⟦1⟧]);
+        int total = ing1 + ing2;
+        System.out.println("Pinche (PID " + ProcessHandle.current().pid() + "): " + total + "g");
+        System.⟦exit⟧(total <= CAPACIDAD_OLLA ? ⟦0⟧ : ⟦1⟧);
+    }
+}`},
+g3:{t:"Cocinero.java (padre)",d:"Lanza al pinche como proceso hijo, espera y lee el código de salida.",code:
+`static void mandarTareaAlPinche(int ing1, int ing2) {
+    try {
+        String cp = System.getProperty("⟦java.class.path⟧");
+        ⟦ProcessBuilder⟧ pb = new ProcessBuilder("java", "-cp", cp, "⟦Pinche⟧",
+                String.valueOf(ing1), String.valueOf(ing2));
+        pb.⟦inheritIO⟧();
+        Process procesoPinche = pb.⟦start⟧();
+        int codigoSalida = procesoPinche.⟦waitFor⟧();
+        if (codigoSalida == 0) System.out.println("Cocinero: la mezcla CABE");
+        else System.out.println("Cocinero: la mezcla SE PASA");
+    } catch (⟦IOException⟧ | ⟦InterruptedException⟧ e) {
+        e.printStackTrace();
+    }
+}`},
+g4:{t:"Ejercicio 9 · Contar respuestas de un ping",d:"Lanza ping a 127.0.0.1 con 4 paquetes, lee su salida y cuenta las líneas con «ttl».",code:
+`boolean win = System.getProperty("⟦os.name⟧").toLowerCase().startsWith("win");
+Process p = new ProcessBuilder("ping", win ? "⟦-n⟧" : "⟦-c⟧", "4", "127.0.0.1")
+        .⟦redirectErrorStream⟧(true).start();
+int ok = 0;
+try (BufferedReader br = p.⟦inputReader|getInputStream⟧()) {
+    String l;
+    while ((l = br.⟦readLine⟧()) != ⟦null⟧) {
+        if (l.toLowerCase().contains("ttl")) ok++;
+    }
+}
+System.out.printf("%d de 4 respuestas (código %d)%n", ok, p.⟦waitFor⟧());`},
+g5:{t:"Esperar con límite y terminar",d:"Espera 5 s; si no ha terminado, pídele que termine; si en 2 s sigue, mátalo.",code:
+`Process p = pb.start();
+if (!p.waitFor(⟦5⟧, TimeUnit.⟦SECONDS⟧)) {
+    p.⟦destroy⟧();
+    if (!p.waitFor(2, TimeUnit.SECONDS))
+        p.⟦destroyForcibly⟧();
+}`}
+};
+
+const FREE={
+f1:{t:"Método abrir(String url) multiplataforma",d:"Escribe un método que elija el comando según el sistema operativo, lance el proceso, muestre su PID y su código de salida, y capture los errores.",
+start:`import java.io.IOException;
+import java.util.List;
+
+public class MenuWebs {
+
+    static void abrir(String url) {
+        // 1. Lee os.name y pásalo a minúsculas
+        // 2. Elige el comando: Windows, macOS o Linux
+        // 3. Lánzalo con ProcessBuilder, muestra PID y código de salida
+        // 4. Captura IOException e InterruptedException
+    }
+}`,
+checks:[
+ ["Lees la propiedad os.name",/getProperty\(\s*"os\.name"\s*\)/],
+ ["Caso Windows: cmd /c start \"\" url",/"cmd"\s*,\s*"\/c"\s*,\s*"start"\s*,\s*""\s*,\s*url/],
+ ["Caso macOS: open",/"open"\s*,\s*url/],
+ ["Caso Linux: xdg-open",/"xdg-open"\s*,\s*url/],
+ ["Creas un ProcessBuilder y llamas a start()",/new\s+ProcessBuilder\s*\([\s\S]*\.start\s*\(\s*\)/],
+ ["Muestras el PID con pid()",/\.pid\s*\(\s*\)/],
+ ["Esperas el código con waitFor()",/\.waitFor\s*\(/],
+ ["Capturas IOException",/catch\s*\([^)]*IOException/],
+ ["Capturas InterruptedException",/catch\s*\([^)]*InterruptedException/]],
+sol:`static void abrir(String url) {
+    String so = System.getProperty("os.name").toLowerCase();
+    List<String> cmd;
+    if (so.contains("win"))      cmd = List.of("cmd", "/c", "start", "", url);
+    else if (so.contains("mac")) cmd = List.of("open", url);
+    else                         cmd = List.of("xdg-open", url); // Linux
+    try {
+        Process p = new ProcessBuilder(cmd).inheritIO().start();
+        System.out.println("Lanzado " + cmd.get(0) + " con PID " + p.pid());
+        System.out.println("Código de salida: " + p.waitFor());
+    } catch (IOException | InterruptedException e) {
+        System.err.println("No se pudo abrir " + url + ": " + e.getMessage());
+    }
+}
+// main: do-while con Scanner que lee la opción y llama a abrir(WEBS[op - 1])`},
+f2:{t:"Ordenar con sort enviándole datos",d:"Lanza el comando sort, escríbele tres frutas por su entrada, cierra el flujo y muestra la salida ordenada. Termina mostrando el código de salida.",
+start:`import java.io.*;
+
+public class Ordenar {
+    public static void main(String[] args) throws Exception {
+        // Lanza "sort"
+        // Escribe "pera", "manzana" y "kiwi" en su entrada (y ciérrala)
+        // Lee su salida y muéstrala
+        // Muestra el código de salida
+    }
+}`,
+checks:[
+ ["Lanzas sort con ProcessBuilder",/new\s+ProcessBuilder\s*\(\s*"sort"/],
+ ["Escribes en la entrada del hijo (outputWriter / getOutputStream)",/\.(outputWriter|getOutputStream)\s*\(/],
+ ["Cierras el flujo (try-with-resources o close())",/try\s*\(\s*\w*\s*\w+\s*=\s*\w+\.(outputWriter|getOutputStream)|\.close\s*\(\s*\)/],
+ ["Lees la salida del hijo (inputReader / getInputStream)",/\.(inputReader|getInputStream)\s*\(/],
+ ["Llamas a waitFor() después de leer",/(inputReader|getInputStream)[\s\S]*waitFor\s*\(/]],
+sol:`Process p = new ProcessBuilder("sort").start();
+try (BufferedWriter w = p.outputWriter()) {
+    w.write("pera\\nmanzana\\nkiwi\\n");
+}   // cerrar = fin de datos
+
+String ordenado = new String(p.getInputStream().readAllBytes());
+System.out.print(ordenado);              // kiwi manzana pera
+System.out.println("Código: " + p.waitFor());`},
+f3:{t:"Lanzador de tareas (esqueleto)",d:"Empieza aquí y comprueba que tienes las piezas clave de la práctica. El análisis solo busca que uses cada API; las pruebas de verdad hazlas en tu IDE.",
+start:`import java.io.*;
+import java.lang.ProcessBuilder.Redirect;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+public class Lanzador {
+    static final Map<Long, Process> hijos = new LinkedHashMap<>();
+    static final boolean WIN = System.getProperty("os.name").toLowerCase().contains("win");
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int op;
+        do {
+            System.out.println("1 Lanzar app  2 Orden a log  3 Listar  4 Terminar  0 Salir");
+            op = Integer.parseInt(sc.nextLine().trim());
+            switch (op) {
+                // completa cada opción
+            }
+        } while (op != 0);
+        // termina los hijos vivos
+    }
+}`,
+checks:[
+ ["Guardas los procesos lanzados (hijos.put)",/hijos\.put\s*\(/],
+ ["Nombre del log con fecha AAAAMMDD",/BASIC_ISO_DATE|"yyyyMMdd"/],
+ ["Rediriges la salida a fichero",/redirectOutput\s*\(/],
+ ["Muestras el estado con isAlive()",/isAlive\s*\(/],
+ ["Muestras el tiempo de CPU",/totalCpuDuration\s*\(/],
+ ["Terminas con destroy()",/\.destroy\s*\(\s*\)/],
+ ["Esperas 3 s antes de forzar",/waitFor\s*\(\s*3\s*,\s*TimeUnit\.SECONDS/],
+ ["Fuerzas con destroyForcibly()",/destroyForcibly\s*\(/],
+ ["Controlas IOException al lanzar",/catch\s*\([^)]*IOException/]],
+sol:`static void terminar(long pid) throws InterruptedException {
+    Process p = hijos.get(pid);
+    if (p == null) { System.out.println("No lancé ese PID"); return; }
+    p.destroy();
+    if (!p.waitFor(3, TimeUnit.SECONDS)) p.destroyForcibly();
+    System.out.println("PID " + pid + " terminado");
+}
+
+static void ordenALog(List<String> cmd) throws IOException, InterruptedException {
+    String fecha = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
+    ProcessBuilder pb = new ProcessBuilder(cmd)
+        .redirectErrorStream(true)
+        .redirectOutput(Redirect.appendTo(new File("salida_" + fecha + ".log")));
+    pb.start().waitFor();   // no se bloquea: la salida va directa al fichero
+}
+
+static void listar() {
+    hijos.forEach((pid, p) -> System.out.printf("%d  %s  %s%n", pid,
+        p.isAlive() ? "vivo" : "terminado (" + p.exitValue() + ")",
+        p.info().totalCpuDuration().map(d -> d.toMillis() + " ms").orElse("?")));
+}`}
+};
+
+const CHECKLIST=["Lanza una aplicación a elegir (editor, calculadora, navegador) de forma portable","Ejecuta una orden del sistema y guarda su salida en salida_AAAAMMDD.log","Lista los procesos lanzados con PID, estado y tiempo de CPU","Termina uno por PID: primero destroy() y, a los 3 s, forzándolo","Al salir, termina todos los hijos que sigan vivos","Probado en Windows y en Linux (o WSL)","Proyecto Maven o Gradle + README con capturas"];
+
+/* ---------- estado ---------- */
+let S={quiz:{},gaps:{},free:{},done:{},check:{}};
+try{const r=localStorage.getItem("psp-t1");if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
+function save(){try{localStorage.setItem("psp-t1",JSON.stringify(S));}catch(e){}updateProgress();}
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+/* ---------- navegación ---------- */
+const nav=document.getElementById("nav");
+function blockState(id){
+  if(S.done[id])return"done";
+  const qs=QUIZ[id]||[];const any=qs.some((_,i)=>S.quiz[id+"-"+i]!==undefined);
+  return any?"run":"new";
+}
+function renderNav(cur){
+  nav.innerHTML="";
+  BLOCKS.forEach((b,i)=>{
+    const st=blockState(b.id);
+    const lab={new:"NUEVO",run:"EN CURSO",done:"HECHO"}[st];
+    const btn=document.createElement("button");
+    btn.setAttribute("aria-current",b.id===cur);
+    btn.innerHTML=`<span class="pid">PID ${100+i*7}</span><span>${b.name}</span><span class="state ${st==="run"?"run":st==="done"?"done":""}">${lab}</span>`;
+    btn.onclick=()=>show(b.id,true);
+    nav.appendChild(btn);
+  });
+}
+let current="b1";
+function show(id,scroll){
+  current=id;
+  document.querySelectorAll("main>section").forEach(s=>s.hidden=s.dataset.block!==id);
+  renderNav(id);
+  try{history.replaceState(null,"","#"+id);}catch(e){}
+  try{localStorage.setItem("psp-t1-tab",id);}catch(e){}
+  if(scroll)window.scrollTo({top:0});
+}
+
+/* ---------- tests ---------- */
+function renderQuiz(host,id){
+  const qs=QUIZ[id];host.className="quiz";host.innerHTML="";
+  qs.forEach((q,i)=>{
+    const key=id+"-"+i;const d=document.createElement("div");d.className="q";
+    d.innerHTML=`<div class="q-head"><span class="q-num">${String(i+1).padStart(2,"0")}</span><span class="q-text">${esc(q.q)}</span></div><div class="opts"></div><div class="expl" hidden></div>`;
+    const opts=d.querySelector(".opts"),ex=d.querySelector(".expl");
+    const paint=()=>{
+      const sel=S.quiz[key];
+      [...opts.children].forEach((b,j)=>{b.className="opt";
+        if(sel!==undefined){b.disabled=true;if(j===q.a)b.classList.add("right");else if(j===sel)b.classList.add("wrong");}
+        else b.disabled=false;});
+      if(sel!==undefined){ex.hidden=false;ex.innerHTML=(sel===q.a?"<b>Correcto.</b> ":"<b>No.</b> La buena es la "+"ABCD"[q.a]+". ")+esc(q.e);}else ex.hidden=true;
+    };
+    q.o.forEach((o,j)=>{const b=document.createElement("button");b.className="opt";
+      b.innerHTML=`<span class="l">${"ABCD"[j]}</span><span>${esc(o)}</span>`;
+      b.onclick=()=>{if(S.quiz[key]!==undefined)return;S.quiz[key]=j;save();paint();foot();renderNav(current);};
+      opts.appendChild(b);});
+    paint();host.appendChild(d);
+  });
+  const f=document.createElement("div");f.className="quiz-foot";host.appendChild(f);
+  function foot(){
+    let a=0,ok=0;qs.forEach((q,i)=>{const s=S.quiz[id+"-"+i];if(s!==undefined){a++;if(s===q.a)ok++;}});
+    f.innerHTML=`<span>${ok}/${qs.length} correctas · ${a} respondidas</span>`;
+    const r=document.createElement("button");r.className="btn ghost";r.textContent="Repetir test";
+    r.onclick=()=>{qs.forEach((_,i)=>delete S.quiz[id+"-"+i]);save();renderQuiz(host,id);renderNav(current);};
+    f.appendChild(r);
+  }
+  foot();
+}
+
+/* ---------- huecos ---------- */
+function renderGaps(host,id){
+  const g=GAPS[id];const parts=g.code.split(/⟦([^⟧]+)⟧/);
+  let html="",n=0;const answers=[];
+  parts.forEach((p,i)=>{
+    if(i%2===0)html+=esc(p);
+    else{const alts=p.split("|");answers.push(alts);const w=Math.max(4,alts[0].length+1);
+      html+=`<input class="gap" id="${id}-${n}" data-n="${n}" style="width:${w}ch" autocomplete="off" spellcheck="false" aria-label="Hueco ${n+1}">`;n++;}
+  });
+  host.className="ex";
+  host.innerHTML=`<div class="ex-title">${esc(g.t)}</div><p class="ex-desc">${esc(g.d)}</p><pre class="code gaps">${html}</pre>
+  <div class="row"><button class="btn">Comprobar</button><button class="btn ghost" data-a="hint">Pista</button><button class="btn ghost" data-a="sol">Ver solución</button><button class="btn ghost" data-a="clr">Borrar</button><span class="status"></span></div>`;
+  const inputs=[...host.querySelectorAll(".gap")],status=host.querySelector(".status");
+  const saved=S.gaps[id]||{};inputs.forEach((inp,k)=>{if(saved.v&&saved.v[k])inp.value=saved.v[k];});
+  const norm=s=>s.replace(/\s+/g,"").replace(/^["']|["']$/g,"").replace(/\(\)$/,"");
+  function check(mark){
+    let ok=0;inputs.forEach((inp,k)=>{const good=answers[k].some(a=>norm(a)===norm(inp.value));
+      inp.classList.remove("ok","ko");if(mark&&inp.value.trim())inp.classList.add(good?"ok":"ko");if(good)ok++;});
+    S.gaps[id]={v:inputs.map(i=>i.value),ok:ok===inputs.length};save();
+    if(mark){status.textContent=ok===inputs.length?"Perfecto: todo bien":`${ok}/${inputs.length} huecos bien`;status.className="status "+(ok===inputs.length?"ok":"ko");}
+  }
+  inputs.forEach(inp=>{inp.addEventListener("input",()=>{inp.classList.remove("ok","ko");check(false);});
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter")check(true);});});
+  host.querySelector(".btn").onclick=()=>check(true);
+  host.querySelector('[data-a="hint"]').onclick=()=>{
+    const k=inputs.findIndex((inp,k)=>!answers[k].some(a=>norm(a)===norm(inp.value)));
+    if(k<0){status.textContent="No hay huecos pendientes";return;}
+    const a=answers[k][0];inputs[k].focus();
+    status.textContent=`Hueco ${k+1}: empieza por «${a.slice(0,Math.max(1,Math.ceil(a.length/3)))}…» (${a.length} caracteres)`;status.className="status";};
+  host.querySelector('[data-a="sol"]').onclick=()=>{inputs.forEach((inp,k)=>inp.value=answers[k][0]);check(true);status.textContent="Solución puesta. Bórrala e inténtalo otra vez de memoria.";};
+  host.querySelector('[data-a="clr"]').onclick=()=>{inputs.forEach(i=>{i.value="";i.classList.remove("ok","ko");});check(false);status.textContent="";};
+  if(saved.v&&saved.v.some(Boolean))check(true);
+}
+
+/* ---------- editor libre ---------- */
+function renderFree(host,id){
+  const f=FREE[id];host.className="ex";
+  host.innerHTML=`<div class="ex-title">${esc(f.t)}</div><p class="ex-desc">${esc(f.d)}</p>
+  <textarea class="editor" id="ed-${id}" spellcheck="false" aria-label="Editor de código"></textarea>
+  <div class="row"><button class="btn">Comprobar</button><button class="btn ghost" data-a="reset">Volver al inicio</button><span class="status"></span></div>
+  <ul class="checks"></ul>
+  <details class="sol"><summary>Ver una solución</summary><pre class="code">${esc(f.sol)}</pre></details>`;
+  const ta=host.querySelector("textarea"),ul=host.querySelector(".checks"),status=host.querySelector(".status");
+  ta.value=(S.free[id]&&S.free[id].code)||f.start;
+  ta.addEventListener("keydown",e=>{if(e.key==="Tab"){e.preventDefault();const s=ta.selectionStart;ta.setRangeText("    ",s,ta.selectionEnd,"end");}});
+  let t;ta.addEventListener("input",()=>{clearTimeout(t);t=setTimeout(()=>{S.free[id]=Object.assign(S.free[id]||{},{code:ta.value});save();},400);});
+  function check(){
+    const code=ta.value.replace(/\/\/.*$/gm,"");let ok=0;ul.innerHTML="";
+    f.checks.forEach(([lab,re])=>{const good=re.test(code);if(good)ok++;
+      const li=document.createElement("li");li.className=good?"ok":"ko";li.innerHTML=`<span class="dot">${good?"✓":"✗"}</span><span>${esc(lab)}</span>`;ul.appendChild(li);});
+    const all=ok===f.checks.length;status.textContent=all?"Tiene todas las piezas":`${ok}/${f.checks.length} piezas`;status.className="status "+(all?"ok":"ko");
+    S.free[id]={code:ta.value,ok:all};save();
+  }
+  host.querySelector(".btn").onclick=check;
+  host.querySelector('[data-a="reset"]').onclick=()=>{ta.value=f.start;ul.innerHTML="";status.textContent="";S.free[id]={code:f.start,ok:false};save();};
+  ul.innerHTML=f.checks.map(([l])=>`<li><span class="dot">·</span><span>${esc(l)}</span></li>`).join("");
+}
+
+/* ---------- transiciones ---------- */
+const STATES=["Nuevo","Listo","Ejecución","Bloqueado","Terminado"];
+const VALID={"Nuevo>Listo":"Válida: el SO admite el proceso.","Listo>Ejecución":"Válida: el planificador a corto plazo lo elige.","Ejecución>Listo":"Válida: fin del quantum o expropiación por uno más prioritario.","Ejecución>Bloqueado":"Válida: pide E/S o espera un suceso.","Bloqueado>Listo":"Válida: llega la E/S que esperaba.","Ejecución>Terminado":"Válida: el proceso termina."};
+const WHY={"Bloqueado>Ejecución":"No: primero vuelve a Listo y espera turno.","Listo>Bloqueado":"No: solo se bloquea quien se está ejecutando.","Terminado>Listo":"No: un proceso terminado no revive; habría que crear otro.","Nuevo>Ejecución":"No: antes tiene que ser admitido en la cola de Listos.","Listo>Terminado":"No: para terminar tiene que estar ejecutándose.","Bloqueado>Terminado":"Según el modelo de 5 estados, no: termina desde Ejecución (aunque el SO puede matar un proceso bloqueado)."};
+function initTrans(){
+  const a=document.getElementById("tFrom"),b=document.getElementById("tTo"),o=document.getElementById("tOut");
+  STATES.forEach(s=>{a.add(new Option(s,s));b.add(new Option(s,s));});a.value="Bloqueado";b.value="Ejecución";
+  document.getElementById("tBtn").onclick=()=>{
+    const k=a.value+">"+b.value;let msg,ok;
+    if(a.value===b.value){msg="Es el mismo estado: no hay transición.";ok=false;}
+    else if(VALID[k]){msg=VALID[k];ok=true;}
+    else{msg=WHY[k]||`No: desde ${a.value} no se puede ir a ${b.value}.`;ok=false;}
+    o.innerHTML=`<div class="verdict ${ok?"ok":"ko"}"><b>${esc(a.value)} → ${esc(b.value)}.</b> ${esc(msg)}</div>`;
+  };
+}
+
+/* ---------- simulador ---------- */
+const PRESETS={e5:{alg:"fcfs",q:2,p:[[8,0],[4,0],[1,0]]},e6:{alg:"rr",q:2,p:[[8,0],[4,0],[1,0]]},e6b:{alg:"rr",q:3,p:[[7,0],[4,2],[2,4]]}};
+const COLORS=["--p1","--p2","--p3","--p4","--p5"];
+const tbody=document.querySelector("#sProcs tbody");
+function addRow(b,a){
+  const n=tbody.children.length+1;if(n>8)return;
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td><span class="badge" style="background:var(${COLORS[(n-1)%5]});color:#fff">P${n}</span></td><td><input type="number" min="1" value="${b}" aria-label="Ráfaga P${n}"></td><td><input type="number" min="0" value="${a}" aria-label="Llegada P${n}"></td><td><button class="btn ghost" aria-label="Quitar P${n}">✕</button></td>`;
+  tr.querySelector("button").onclick=()=>{tr.remove();renumber();};
+  tbody.appendChild(tr);
+}
+function renumber(){[...tbody.children].forEach((tr,i)=>{const bd=tr.querySelector(".badge");bd.textContent="P"+(i+1);bd.style.background=`var(${COLORS[i%5]})`;});}
+function loadPreset(k){const p=PRESETS[k];if(!p)return;tbody.innerHTML="";p.p.forEach(([b,a])=>addRow(b,a));document.getElementById("sAlg").value=p.alg;document.getElementById("sQ").value=p.q;document.getElementById("sOut").innerHTML="";}
+function simulate(procs,alg,q){
+  const P=procs.map((p,i)=>({i,name:"P"+(i+1),b:p.b,a:p.a,rem:p.b,end:null}));
+  const sl=[];let t=0,doneN=0;
+  const push=(name,s,e,i)=>{const L=sl[sl.length-1];if(L&&L.name===name&&L.e===s&&name==="—")L.e=e;else sl.push({name,s,e,i});};
+  if(alg==="rr"){
+    const queue=[];const arrived=new Set();
+    const arrive=upto=>P.filter(p=>!arrived.has(p.i)&&p.a<=upto).sort((x,y)=>x.a-y.a||x.i-y.i).forEach(p=>{arrived.add(p.i);queue.push(p);});
+    arrive(t);
+    while(doneN<P.length){
+      if(!queue.length){const nx=Math.min(...P.filter(p=>!arrived.has(p.i)).map(p=>p.a));push("—",t,nx,-1);t=nx;arrive(t);continue;}
+      const p=queue.shift();const run=Math.min(q,p.rem);push(p.name,t,t+run,p.i);t+=run;p.rem-=run;
+      arrive(t);
+      if(p.rem>0)queue.push(p);else{p.end=t;doneN++;}
+    }
+  }else{
+    while(doneN<P.length){
+      const ready=P.filter(p=>p.end===null&&p.a<=t);
+      if(!ready.length){const nx=Math.min(...P.filter(p=>p.end===null).map(p=>p.a));push("—",t,nx,-1);t=nx;continue;}
+      ready.sort(alg==="sjf"?(x,y)=>x.b-y.b||x.a-y.a||x.i-y.i:(x,y)=>x.a-y.a||x.i-y.i);
+      const p=ready[0];push(p.name,t,t+p.b,p.i);t+=p.b;p.end=t;p.rem=0;doneN++;
+    }
+  }
+  const real=sl.filter(s=>s.i>=0);let cs=0,qcuts=0;
+  for(let k=1;k<real.length;k++){if(real[k].name!==real[k-1].name)cs++;else qcuts++;}
+  return{P,sl,cs,qcuts};
+}
+function runSim(){
+  const procs=[...tbody.children].map(tr=>{const [b,a]=tr.querySelectorAll("input");return{b:Math.max(1,parseInt(b.value)||1),a:Math.max(0,parseInt(a.value)||0)};});
+  const out=document.getElementById("sOut");if(!procs.length){out.innerHTML="";return;}
+  const alg=document.getElementById("sAlg").value,q=Math.max(1,parseInt(document.getElementById("sQ").value)||1);
+  const r=simulate(procs,alg,q);const total=r.sl[r.sl.length-1].e;
+  const practice=document.getElementById("sPractice").checked;
+  const bars=r.sl.map(s=>`<div style="flex:${s.e-s.s};background:var(${s.i<0?"--idle":COLORS[s.i%5]})" title="${s.name} · ${s.s}-${s.e} ms">${s.e-s.s>=1?s.name:""}</div>`).join("");
+  const marks=[...new Set(r.sl.flatMap(s=>[s.s,s.e]))].map(m=>`<span style="left:${m/total*100}%">${m}</span>`).join("");
+  let sumR=0,sumW=0;
+  const rows=r.P.map(p=>{const ret=p.end-p.a,w=ret-p.b;sumR+=ret;sumW+=w;
+    return practice?`<tr><td>${p.name}</td><td>${p.b}</td><td>${p.a}</td><td><input type="number" data-k="end" data-v="${p.end}" aria-label="Fin ${p.name}"></td><td><input type="number" data-k="ret" data-v="${ret}" aria-label="Retorno ${p.name}"></td><td><input type="number" data-k="w" data-v="${w}" aria-label="Espera ${p.name}"></td></tr>`
+    :`<tr><td>${p.name}</td><td>${p.b}</td><td>${p.a}</td><td>${p.end}</td><td>${ret}</td><td>${w}</td></tr>`;}).join("");
+  const n=r.P.length,f=x=>(Math.round(x/n*100)/100).toString().replace(".",",");
+  const algName={fcfs:"FCFS",sjf:"SJF",rr:"Round Robin q="+q}[alg];
+  out.innerHTML=`${practice?`<div class="note">Modo práctica: dibuja el Gantt en papel y rellena la tabla. El diagrama aparece al comprobar.</div>`:""}
+  <div id="gWrap" ${practice?"hidden":""}><div class="gantt">${bars}</div><div class="ticks">${marks}</div></div>
+  <div class="tbl res"><table><tr><th>Proceso</th><th>Ráfaga</th><th>Llegada</th><th>Fin</th><th>Retorno</th><th>Espera</th></tr>${rows}
+  ${practice?"":`<tr><td colspan="4"><b>Media</b></td><td><b>${f(sumR)}</b></td><td><b>${f(sumW)}</b></td></tr>`}</table></div>
+  ${practice?`<div class="row"><button class="btn" id="sCheck">Comprobar mis cálculos</button><span class="status" id="sStat"></span></div>`:""}
+  <p id="sInfo" ${practice?"hidden":""} style="font-size:15px"><b>${algName}</b> · ${r.cs} cambios de contexto entre procesos distintos${r.qcuts?` · ${r.qcuts} fin(es) de quantum en que sigue el mismo proceso`:""}. Espera media <b>${f(sumW)} ms</b>, retorno medio <b>${f(sumR)} ms</b>.${alg==="rr"&&r.qcuts?` <span style="color:var(--muted)">En el ejercicio 6 la presentación cuenta también ese fin de quantum (P1 → P1) y da 6 cambios; pregunta a tu profesor qué criterio quiere.</span>`:""}</p>`;
+  if(practice)document.getElementById("sCheck").onclick=()=>{
+    let ok=0,tot=0;out.querySelectorAll(".res input").forEach(i=>{tot++;const g=i.value!==""&&+i.value===+i.dataset.v;if(g)ok++;i.style.borderColor=g?"var(--ok)":"var(--bad)";i.style.background=g?"var(--ok-soft)":"var(--bad-soft)";});
+    const st=document.getElementById("sStat");st.textContent=`${ok}/${tot} correctos`;st.className="status "+(ok===tot?"ok":"ko");
+    document.getElementById("gWrap").hidden=false;document.getElementById("sInfo").hidden=false;
+  };
+}
+
+/* ---------- checklist práctica ---------- */
+function renderChecklist(){
+  const h=document.getElementById("checklist");
+  h.innerHTML=CHECKLIST.map((c,i)=>`<label style="display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer"><input type="checkbox" id="ck-${i}" ${S.check[i]?"checked":""} style="width:18px;height:18px;accent-color:var(--accent);margin-top:3px"><span>${esc(c)}</span></label>`).join("");
+  h.querySelectorAll("input").forEach((inp,i)=>inp.onchange=()=>{S.check[i]=inp.checked;save();});
+}
+
+/* ---------- progreso ---------- */
+function updateProgress(){
+  let total=0,got=0,ok=0;
+  Object.entries(QUIZ).forEach(([id,qs])=>qs.forEach((q,i)=>{total++;const s=S.quiz[id+"-"+i];if(s!==undefined){got+= s===q.a?1:.4;if(s===q.a)ok++;}}));
+  Object.keys(GAPS).forEach(k=>{total+=2;if(S.gaps[k]&&S.gaps[k].ok)got+=2;});
+  Object.keys(FREE).forEach(k=>{total+=2;if(S.free[k]&&S.free[k].ok)got+=2;});
+  BLOCKS.forEach(b=>{total+=2;if(S.done[b.id])got+=2;});
+  const pct=Math.round(got/total*100);
+  document.getElementById("pct").textContent=pct+" %";document.getElementById("fill").style.width=pct+"%";
+  const nq=Object.values(QUIZ).reduce((a,q)=>a+q.length,0);
+  document.getElementById("stats").textContent=`${ok}/${nq} preguntas acertadas`;
+}
+
+/* ---------- arranque ---------- */
+document.querySelectorAll("[data-quiz]").forEach(h=>renderQuiz(h,h.dataset.quiz));
+document.querySelectorAll("[data-gaps]").forEach(h=>renderGaps(h,h.dataset.gaps));
+document.querySelectorAll("[data-free]").forEach(h=>renderFree(h,h.dataset.free));
+document.querySelectorAll("main>section").forEach((sec,i)=>{
+  const id=sec.dataset.block;const bar=document.createElement("div");bar.className="done-bar";
+  const next=BLOCKS[i+1];
+  bar.innerHTML=`<label><input type="checkbox" id="done-${id}" ${S.done[id]?"checked":""}> Bloque estudiado</label>${next?`<button class="btn">Siguiente: ${next.name} →</button>`:""}`;
+  bar.querySelector("input").onchange=e=>{S.done[id]=e.target.checked;save();renderNav(current);};
+  if(next)bar.querySelector("button").onclick=()=>show(next.id,true);
+  sec.appendChild(bar);
+});
+initTrans();renderChecklist();
+document.getElementById("sAdd").onclick=()=>addRow(3,0);
+document.getElementById("sRun").onclick=runSim;
+document.getElementById("sPreset").onchange=e=>{loadPreset(e.target.value);if(e.target.value)runSim();};
+document.getElementById("sPractice").onchange=runSim;
+loadPreset("e6b");runSim();
+let start="b1";
+const h=(location.hash||"").slice(1);if(BLOCKS.some(b=>b.id===h))start=h;
+else{try{const t=localStorage.getItem("psp-t1-tab");if(t&&BLOCKS.some(b=>b.id===t))start=t;}catch(e){}}
+show(start,false);updateProgress();
+</script>
+</body>
+</html>
