@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Web interactiva para estudiar PSP Tema 1: procesos, planificación de CPU y ProcessBuilder en Java, con tests y ejercicios de código.">
-<title>PSP Tema 1 · Multiprocesos</title>
+<meta name="description" content="Web interactiva para estudiar PSP (2.º DAM): Tema 1 Multiprocesos y Tema 2 Multihilos en Java, con tests, simuladores y ejercicios de código.">
+<title>PSP · Multiprocesos y multihilos</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 html,body{height:100%}body{margin:0}[hidden]{display:none!important}
@@ -55,6 +55,29 @@ aside{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow:aut
 .star-btn:hover{filter:brightness(1.05)}
 .star-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .meter{margin-bottom:22px}
+.nav-group{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 10px 4px}
+.nav-group:first-child{padding-top:0}
+/* tema 2: widgets */
+.pred{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;margin-top:12px}
+.pred .lbl{font-family:var(--mono);font-size:13px;font-weight:600}
+.pred .why{grid-column:2;font-size:14px;color:var(--muted);margin-top:-4px}
+.pred select.ok{border-color:var(--ok);background:var(--ok-soft)} .pred select.ko{border-color:var(--bad);background:var(--bad-soft)}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.steps .btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.dl{display:grid;grid-template-columns:112px minmax(0,1fr);gap:6px 10px;align-items:center;font-size:13.5px}
+.dl .nm{font-family:var(--mono);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl .lane{position:relative;height:26px;background:var(--sunk);border-radius:5px}
+.dl .bar{position:absolute;top:0;bottom:0;border-radius:5px;display:flex;align-items:center;padding:0 8px;color:#fff;font-family:var(--mono);font-size:11.5px;white-space:nowrap;overflow:hidden;transition:left .35s,width .35s}
+.dl .bar.cut{background:repeating-linear-gradient(45deg,var(--bad-soft),var(--bad-soft) 6px,var(--surface) 6px,var(--surface) 12px);color:var(--bad);font-weight:700;box-shadow:inset 0 0 0 1.5px var(--bad)}
+.dl-axis{position:relative;height:20px;margin-left:122px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.dl-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.dl-axis span:last-child{transform:translateX(-100%)}
+.dl-total{margin-top:12px;font-size:15px}
+.amd{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.amd label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+.amd input{width:90px}
+.amd-out{font-family:var(--display);font-size:22px;font-weight:700;margin-top:12px}
+.amd-out small{font-family:var(--body);font-size:14px;font-weight:400;color:var(--muted)}
 .meter-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--muted)}
 .meter-bar{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;margin-top:6px}
 .meter-fill{height:100%;background:var(--accent);width:0;transition:width .4s}
@@ -168,6 +191,10 @@ select,input[type=number],input[type=text].in{font:inherit;font-size:14.5px;padd
   nav button{grid-template-columns:auto;white-space:nowrap;border:1px solid var(--line)}
   nav button .pid,nav button .state{display:none}
   .legend{display:none}
+  .nav-group{display:flex;align-items:center;white-space:nowrap;padding:0 4px 0 8px;font-size:10.5px}
+  .nav-group:first-child{padding-left:0}
+  .dl{grid-template-columns:84px minmax(0,1fr)}
+  .dl-axis{margin-left:94px}
   main{padding-left:max(16px,env(safe-area-inset-left,0px))}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -178,7 +205,7 @@ select,input[type=number],input[type=text].in{font:inherit;font-size:14.5px;padd
 <div class="app">
 <aside>
   <div class="brand">PSP · 2.º DAM · IES Rafael Alberti</div>
-  <div class="brand-title">Tema 1<br>Multiprocesos</div>
+  <div class="brand-title">Multiprocesos<br>y multihilos</div>
   <a class="repo" id="repo" href="https://github.com/pmaliagil1/psp-tema1-multiprocesos" target="_blank" rel="noopener" title="Ir al repositorio en GitHub">
     <svg class="repo-ico" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
     <span class="repo-txt">
@@ -196,7 +223,7 @@ select,input[type=number],input[type=text].in{font:inherit;font-size:14.5px;padd
     <div class="meter-row" style="margin-top:6px"><span id="stats">0 aciertos</span></div>
   </div>
   <nav id="nav"></nav>
-  <div class="legend">Cada bloque tiene teoría, un test que se corrige al marcar y ejercicios de código. Tu progreso se guarda en este navegador.</div>
+  <div class="legend">Tema 1 y Tema 2 en una sola web. Cada bloque tiene teoría, un test que se corrige al marcar y ejercicios de código. Tu progreso se guarda en este navegador.</div>
 </aside>
 
 <main id="main">
@@ -315,6 +342,39 @@ ps -e | wc -l           <span class="c"># total del equipo</span></pre>
     <div class="cell"><b>Inconvenientes</b><span>La red falla y tarda; sincronizar es difícil y hay que proteger los datos que viajan.</span></div>
   </div>
 
+  <h3>CPU-bound o I/O-bound</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>Limitada por CPU (CPU-bound)</th><th>Limitada por E/S (I/O-bound)</th></tr>
+    <tr><td>Pasa el tiempo…</td><td>calculando</td><td>esperando: disco, red, teclado, pantalla</td></tr>
+    <tr><td>Ejemplos</td><td>calcular la física de un juego, comprimir, cifrar</td><td>leer el mando, descargar, consultar una BBDD, dibujar en la tarjeta gráfica</td></tr>
+    <tr><td>Más núcleos ayudan…</td><td>sí, hasta llenar los núcleos</td><td>poco: mientras una espera, otra puede usar la CPU</td></tr>
+  </table></div>
+  <div class="note">Mientras una tarea I/O-bound espera (por ejemplo, a que el jugador pulse un botón) está <b>bloqueada</b>, y el planificador le da la CPU a otra que esté <b>lista</b>.</div>
+
+  <h3>Paralelismo trivial (embarrassingly parallel)</h3>
+  <p>Un problema es de <span class="key">paralelismo trivial</span> cuando se parte en trozos <b>independientes</b>: ningún trozo necesita el resultado de otro. Cuatro coladas en cuatro lavadoras, o aplicar un filtro a cada foto de una carpeta. No lo es calcular Fibonacci o seguir los pasos de una receta en orden: cada paso depende del anterior.</p>
+  <div class="tbl"><table>
+    <tr><th>4 coladas (30 min lavar + 45 min secar)</th><th>Tiempo</th><th>Tipo</th></tr>
+    <tr><td>Una lavadora y una secadora, carga a carga</td><td>300 min</td><td>secuencial</td></tr>
+    <tr><td>Lavas la siguiente mientras se seca la anterior</td><td>210 min</td><td>concurrente</td></tr>
+    <tr><td>Cuatro lavadoras y cuatro secadoras</td><td>75 min</td><td>paralela</td></tr>
+  </table></div>
+
+  <h3>Ley de Amdahl: el límite de añadir núcleos</h3>
+  <p>Si solo una parte <b>p</b> del programa se puede paralelizar, la parte secuencial (1 − p) pone un techo. Con <b>n</b> núcleos, la aceleración es:</p>
+  <div class="cell dark" style="text-align:center;font-family:var(--mono);font-size:17px;margin:12px 0">S = 1 / ((1 − p) + p / n)</div>
+  <div class="ex">
+    <div class="ex-title">Calculadora de Amdahl</div>
+    <div class="amd" style="margin-top:10px">
+      <label>Parte paralelizable (%)<input type="number" id="amdP" min="0" max="100" value="80" class="in"></label>
+      <label>Núcleos<input type="number" id="amdN" min="1" value="4" class="in"></label>
+      <label>Tiempo con 1 núcleo (s)<input type="number" id="amdT" min="1" value="100" class="in"></label>
+    </div>
+    <div class="amd-out" id="amdOut"></div>
+    <div class="tbl" id="amdTbl"></div>
+  </div>
+  <div class="note ok">Con un 80 % paralelizable, aunque tengas infinitos núcleos <b>nunca pasas de 5×</b>: el 20 % secuencial sigue tardando lo mismo.</div>
+
   <h2><span class="tag">Test</span> ¿Qué tipo es?</h2>
   <div data-quiz="b2"></div>
 </section>
@@ -421,7 +481,7 @@ ps -e | wc -l           <span class="c"># total del equipo</span></pre>
     <div class="sim-ctrl">
       <label>Algoritmo<select id="sAlg"><option value="fcfs">FCFS</option><option value="sjf">SJF (no apropiativo)</option><option value="rr">Round Robin</option></select></label>
       <label>Quantum (ms)<input type="number" id="sQ" min="1" value="3"></label>
-      <label>Ejercicio<select id="sPreset"><option value="">—</option><option value="e5">Ej. 5 · P1 8, P2 4, P3 1</option><option value="e6">Ej. 6 · RR q=2</option><option value="e6b" selected>Ej. 6B · RR q=3 con llegadas</option></select></label>
+      <label>Ejercicio<select id="sPreset"><option value="">—</option><option value="e5">Ej. 5 · P1 8, P2 4, P3 1</option><option value="e6">Ej. 6 · RR q=2</option><option value="e6b" selected>Ej. 6B · RR q=3 con llegadas</option><option value="bol4">Boletín ej. 4 · 4 procesos con llegadas</option></select></label>
       <label style="flex-direction:row;align-items:center;gap:6px;font-size:14px;font-family:var(--body);color:var(--fg)"><input type="checkbox" id="sPractice"> Modo práctica</label>
     </div>
     <div class="tbl"><table id="sProcs"><thead><tr><th>Proceso</th><th>Ráfaga</th><th>Llegada</th><th></th></tr></thead><tbody></tbody></table></div>
@@ -569,7 +629,29 @@ List&lt;Process&gt; tuberia = ProcessBuilder.startPipeline(List.of(
 Process ultimo = tuberia.get(tuberia.size() - 1);</pre>
   <p>La salida de cada proceso se conecta a la entrada del siguiente sin pasar por Java y sin usar la shell.</p>
 
+  <h3>Varios hijos a la vez y contar los vivos</h3>
+  <p>Si lanzas los hijos con <code>start()</code> y <b>no</b> llamas a <code>waitFor()</code> en el mismo bucle, se ejecutan a la vez. Desde el padre, <code>ProcessHandle.current().children()</code> devuelve sus hijos directos.</p>
+<pre class="code"><span class="c">// PadreHijos.java · lanza 3 hijos InfoHijo sin esperar</span>
+List&lt;Process&gt; lista = <b>new</b> ArrayList&lt;&gt;();
+String cp = System.getProperty(<span class="s">"java.class.path"</span>);  <span class="c">// el hijo busca InfoHijo.class donde el padre</span>
+<b>for</b> (<b>int</b> i = 1; i &lt;= 3; i++) {
+    ProcessBuilder pb = <b>new</b> ProcessBuilder(<span class="s">"java"</span>, <span class="s">"-cp"</span>, cp, <span class="s">"InfoHijo"</span>, String.valueOf(i));
+    lista.add(pb.inheritIO().start());           <span class="c">// sin waitFor() aquí</span>
+}
+Thread.sleep(500);
+<b>long</b> vivos = ProcessHandle.current().children().filter(ProcessHandle::isAlive).count();
+System.out.println(<span class="s">"Hijos vivos a los 0.5 s: "</span> + vivos);   <span class="c">// 3: duermen 1 s</span>
+<b>for</b> (Process p : lista) p.waitFor();          <span class="c">// ahora sí, esperar a todos</span>
+
+<span class="c">// InfoHijo.java</span>
+<b>long</b> pid = ProcessHandle.current().pid();
+<b>long</b> padre = ProcessHandle.current().parent().map(ProcessHandle::pid).orElse(0L);
+System.out.println(<span class="s">"Hijo "</span> + args[0] + <span class="s">": mi PID es "</span> + pid + <span class="s">", mi padre es "</span> + padre);
+Thread.sleep(1000);</pre>
+  <div class="note">Si pones <code>waitFor()</code> dentro del primer bucle, cada hijo espera al anterior y vuelves a lo secuencial. Es la misma trampa que con <code>join()</code> en los hilos del Tema 2.</div>
+
   <h2><span class="tag">Código</span> Rellena los huecos</h2>
+  <div data-gaps="g6"></div>
   <div data-gaps="g4"></div>
   <div data-gaps="g5"></div>
 
@@ -604,19 +686,434 @@ Process ultimo = tuberia.get(tuberia.size() - 1);</pre>
   <div data-free="f3"></div>
 </section>
 
+<!-- =============== TEMA 2 · BLOQUE 1 =============== -->
+<section data-block="t1" hidden>
+  <div class="eyebrow">Tema 2 · Bloque 1 · Proceso frente a hilo</div>
+  <h1>El proceso es la cocina; los hilos, los cocineros</h1>
+  <p class="lead">Un proceso es el contenedor de recursos. Un hilo es quien ejecuta las instrucciones. Todo proceso tiene al menos uno: en Java, el que ejecuta <code>main</code>.</p>
+
+  <h2><span class="tag">Teoría</span> Una línea de ejecución dentro de un proceso</h2>
+  <div class="grid">
+    <div class="cell"><b>Proceso = la cocina</b><span>Nevera, fogones y despensa: memoria, ficheros y conexiones.</span></div>
+    <div class="cell"><b>Hilos = cocineros</b><span>Varios trabajando en la misma cocina a la vez.</span></div>
+    <div class="cell dark"><b>Libreta de cada cocinero</b><span>Por dónde va: su <strong style="color:var(--code-fg)">pila</strong> y su <strong style="color:var(--code-fg)">contador de programa</strong>.</span></div>
+  </div>
+  <p>Desde el hilo principal podemos crear más hilos que avancen a la vez. Cada hilo puede ir en un núcleo distinto; con un solo núcleo, se turnan. Hay hilos del sistema (teclado, red, pantalla…) y <b>hilos de usuario</b>, los que creamos nosotros.</p>
+
+  <h3>Qué comparten los hilos y qué no</h3>
+  <div class="tbl"><table>
+    <tr><th>Compartido por todos los hilos del proceso (la JVM)</th><th>Propio de cada hilo</th></tr>
+    <tr><td><b>Heap</b> (los objetos), variables <code>static</code>, ficheros abiertos, conexiones de red</td><td><b>Pila</b> (variables locales) y <b>contador de programa</b></td></tr>
+  </table></div>
+  <div class="note">Si dos hilos tienen la referencia a un objeto, <b>ven el mismo</b>. Compartir es rápido, pero peligroso si dos hilos escriben a la vez (lo veréis el 4 de noviembre: condiciones de carrera).</div>
+
+  <h3>Para qué queremos hilos</h3>
+  <div class="grid">
+    <div class="cell"><b>Que no se congele</b><span>La interfaz responde mientras otro hilo descarga, guarda o calcula.</span></div>
+    <div class="cell"><b>Atender a muchos</b><span>Un servidor dedica un hilo a cada cliente y no hace esperar a nadie.</span></div>
+    <div class="cell"><b>Usar todos los núcleos</b><span>Un cálculo grande se reparte en trozos, uno por núcleo.</span></div>
+  </div>
+  <p>Casi nunca se ve a simple vista: <code>Future</code>, callbacks, async/await y corrutinas funcionan siempre sobre hilos.</p>
+
+  <h3>CPU-bound o IO-bound: cuántos hilos</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>CPU-bound</th><th>IO-bound</th></tr>
+    <tr><td>Pasa el tiempo…</td><td>calculando</td><td>esperando (red, disco, usuario)</td></tr>
+    <tr><td>Ejemplos</td><td>comprimir, cifrar, renderizar</td><td>descargar, consultar una BBDD</td></tr>
+    <tr><td>Los hilos ganan…</td><td>solo si hay núcleos libres</td><td>casi siempre: uno espera, otro trabaja</td></tr>
+    <tr><td>Cuántos hilos</td><td>≈ núcleos disponibles</td><td>muchos más que núcleos</td></tr>
+  </table></div>
+<pre class="code"><b>int</b> nucleos = Runtime.getRuntime().availableProcessors(); <span class="c">// cuántos núcleos ve la JVM</span></pre>
+  <div class="note ok"><b>Regla del ejercicio 1:</b> compartir datos pide <b>hilo</b>; aislar (que un fallo no tumbe al resto) pide <b>proceso</b>.</div>
+
+  <h2><span class="tag">Test</span> ¿Proceso nuevo o hilo? ¿CPU o IO?</h2>
+  <div data-quiz="t1"></div>
+</section>
+
+<!-- =============== TEMA 2 · BLOQUE 2 =============== -->
+<section data-block="t2" hidden>
+  <div class="eyebrow">Tema 2 · Bloque 2 · Crear hilos en Java</div>
+  <h1>Thread, Runnable y start()</h1>
+  <p class="lead">La clase <code>Thread</code> y la interfaz <code>Runnable</code> son del paquete <code>java.lang</code>: no hay que importar nada.</p>
+
+  <h2><span class="tag">Teoría</span> Tres formas de decir qué hace un hilo</h2>
+<pre class="code"><span class="c">// 1. Heredar de Thread</span>
+<b>class</b> Cocinero <b>extends</b> Thread {
+    <b>public void</b> run() { System.out.println(<span class="s">"Cocino"</span>); }
+}
+<b>new</b> Cocinero().start();
+
+<span class="c">// 2. Implementar Runnable</span>
+<b>class</b> Pinche <b>implements</b> Runnable {
+    <b>public void</b> run() { System.out.println(<span class="s">"Pico cebolla"</span>); }
+}
+<b>new</b> Thread(<b>new</b> Pinche()).start();
+
+<span class="c">// 3. Lambda: Runnable tiene un solo método</span>
+<b>new</b> Thread(() -&gt; System.out.println(<span class="s">"Friego"</span>)).start();</pre>
+  <div class="grid">
+    <div class="cell"><b>Usa Runnable o lambda</b><span>Separas la tarea del hilo que la ejecuta, y tu clase puede heredar de otra.</span></div>
+    <div class="cell"><b>Heredar de Thread</b><span>Funciona, pero gastas la única herencia que permite Java.</span></div>
+  </div>
+  <p>En las tres, el trabajo va en <code>run()</code> y el hilo arranca con <code>start()</code>.</p>
+
+  <h3>HolaHilos: crear, arrancar y esperar</h3>
+<pre class="code">Runnable saludo = () -&gt; System.out.println(
+        <span class="s">"Hola desde "</span> + Thread.currentThread().getName());
+Thread t1 = <b>new</b> Thread(saludo, <span class="s">"T1"</span>);   <span class="c">// tarea + nombre</span>
+Thread t2 = <b>new</b> Thread(saludo, <span class="s">"T2"</span>);
+t1.start(); t2.start();                 <span class="c">// arrancan a la vez</span>
+t1.join();  t2.join();                  <span class="c">// main espera a ambos</span>
+System.out.println(<span class="s">"Fin del main"</span>);
+
+<span class="c">$ java HolaHilos</span>
+<span class="c">Hola desde T2</span>
+<span class="c">Hola desde T1</span>
+<span class="c">Fin del main</span></pre>
+  <ul>
+    <li><code>Thread.currentThread()</code> devuelve el hilo que está ejecutando esa línea.</li>
+    <li>El orden de T1 y T2 <b>cambia entre ejecuciones</b>: lo decide el planificador.</li>
+    <li>Sin los <code>join()</code>, «Fin del main» podría salir antes que los saludos.</li>
+  </ul>
+
+  <h3>El error clásico: llamar a run() en vez de start()</h3>
+<pre class="code">Thread t = <b>new</b> Thread(() -&gt; {
+    System.out.println(<span class="s">"Me ejecuta: "</span> + Thread.currentThread().getName());
+}, <span class="s">"Worker"</span>);
+t.run();    <span class="c">// NO crea hilo: lo ejecuta main → "Me ejecuta: main"</span>
+t.start();  <span class="c">// SÍ crea un hilo nuevo     → "Me ejecuta: Worker"</span></pre>
+  <div class="grid">
+    <div class="cell"><b>run()</b><span>Lo que hace el hilo. Nunca lo llames tú.</span></div>
+    <div class="cell"><b>start()</b><span>Pide al sistema un hilo nuevo, y él llama a <code>run()</code>. Solo una vez: la segunda lanza <code>IllegalThreadStateException</code>.</span></div>
+  </div>
+
+  <h3>Muchos hilos: un bucle para arrancar, otro para esperar</h3>
+<pre class="code">List&lt;Thread&gt; hilos = <b>new</b> ArrayList&lt;&gt;();
+<b>for</b> (<b>int</b> i = 0; i &lt; 8; i++) {
+    <b>int</b> n = i;  <span class="c">// la lambda necesita una variable que no cambie</span>
+    Thread t = <b>new</b> Thread(() -&gt; System.out.println(<span class="s">"Hola desde H"</span> + n), <span class="s">"H"</span> + n);
+    hilos.add(t);
+    t.start();
+}
+<b>for</b> (Thread t : hilos) t.join();   <span class="c">// esperar a todos, después</span></pre>
+  <div class="note"><b>Trampa:</b> si haces <code>join()</code> dentro del primer bucle, cada hilo espera al anterior y vuelves a lo secuencial. Y dentro de la lambda no puedes usar <code>i</code> (cambia en cada vuelta): por eso se copia en <code>n</code>.</div>
+
+  <h2><span class="tag">Código</span> Rellena los huecos</h2>
+  <div data-gaps="tg1"></div>
+
+  <h2><span class="tag">Código</span> Ejercicio 2 · La cocina con tres cocineros</h2>
+  <div data-free="tf1"></div>
+
+  <h2><span class="tag">Test</span> Crear hilos</h2>
+  <div data-quiz="t2"></div>
+</section>
+
+<!-- =============== TEMA 2 · BLOQUE 3 =============== -->
+<section data-block="t3" hidden>
+  <div class="eyebrow">Tema 2 · Bloque 3 · Ciclo de vida de un hilo</div>
+  <h1>Seis estados en Thread.State</h1>
+  <p class="lead">Cada hilo pasa por ellos según lo que hacemos nosotros y lo que decide el sistema. Ojo: no son los mismos cinco estados de los procesos del Tema 1.</p>
+
+  <h2><span class="tag">Teoría</span> El diagrama</h2>
+  <div class="diagram">
+  <svg viewBox="0 0 760 300" role="img" aria-label="Estados de un hilo: NEW, RUNNABLE, TERMINATED, y BLOCKED, WAITING, TIMED_WAITING que vuelven a RUNNABLE">
+    <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--fg)"/></marker></defs>
+    <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--muted)">
+      <line x1="140" y1="60" x2="288" y2="60" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar2)"/>
+      <text x="185" y="48">start()</text>
+      <line x1="470" y1="60" x2="618" y2="60" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar2)"/>
+      <text x="505" y="48">acaba run()</text>
+      <line x1="330" y1="84" x2="140" y2="198" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar2)" marker-start="url(#ar2)"/>
+      <line x1="380" y1="84" x2="380" y2="198" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar2)" marker-start="url(#ar2)"/>
+      <line x1="430" y1="84" x2="620" y2="198" stroke="var(--fg)" stroke-width="1.6" marker-end="url(#ar2)" marker-start="url(#ar2)"/>
+      <text x="40" y="270">cerrojo ocupado (próx. sesión)</text>
+      <text x="300" y="270">join() / wait() sin límite</text>
+      <text x="545" y="270">sleep(ms) / join(ms)</text>
+    </g>
+    <g font-family="Archivo, sans-serif" font-weight="700" font-size="15" text-anchor="middle">
+      <rect x="20" y="38" width="120" height="44" rx="8" fill="var(--surface)" stroke="var(--line)"/><text x="80" y="65" fill="var(--fg)">NEW</text>
+      <rect x="290" y="38" width="180" height="44" rx="8" fill="var(--accent)"/><text x="380" y="58" fill="var(--accent-fg)">RUNNABLE</text>
+      <text x="380" y="75" fill="var(--accent-fg)" font-size="11" font-weight="500" font-family="IBM Plex Sans, sans-serif">listo o ejecutándose</text>
+      <rect x="620" y="38" width="130" height="44" rx="8" fill="var(--surface)" stroke="var(--line)"/><text x="685" y="65" fill="var(--fg)">TERMINATED</text>
+      <rect x="40" y="200" width="150" height="44" rx="8" fill="var(--sunk)" stroke="var(--line)"/><text x="115" y="227" fill="var(--fg)">BLOCKED</text>
+      <rect x="305" y="200" width="150" height="44" rx="8" fill="var(--sunk)" stroke="var(--line)"/><text x="380" y="227" fill="var(--fg)">WAITING</text>
+      <rect x="570" y="200" width="170" height="44" rx="8" fill="var(--sunk)" stroke="var(--line)"/><text x="655" y="227" fill="var(--fg)">TIMED_WAITING</text>
+    </g>
+  </svg>
+  </div>
+
+  <h3>Qué provoca cada cambio de estado</h3>
+  <div class="tbl"><table>
+    <tr><th>Lo que ocurre</th><th>Estado del hilo</th></tr>
+    <tr><td><code>new Thread(tarea)</code></td><td>NEW</td></tr>
+    <tr><td><code>t.start()</code></td><td>RUNNABLE</td></tr>
+    <tr><td><code>Thread.sleep(500)</code></td><td>TIMED_WAITING</td></tr>
+    <tr><td><code>otro.join()</code></td><td>WAITING</td></tr>
+    <tr><td><code>otro.join(2000)</code></td><td>TIMED_WAITING</td></tr>
+    <tr><td>Entrar en un <code>synchronized</code> ocupado</td><td>BLOCKED</td></tr>
+    <tr><td>Esperar el teclado o la red</td><td><b>RUNNABLE</b> (¡ojo!)</td></tr>
+    <tr><td>Acaba <code>run()</code> o lanza una excepción</td><td>TERMINATED</td></tr>
+  </table></div>
+  <div class="note"><b><code>stop()</code> ya no existe:</b> desde JDK 20 lanza <code>UnsupportedOperationException</code>. Para pedir a un hilo que pare: <code>interrupt()</code>. Consulta el estado con <code>t.getState()</code> o <code>t.isAlive()</code> (true si ya arrancó y no ha terminado).</div>
+
+  <h3>Ver los estados con getState()</h3>
+<pre class="code">Thread t = <b>new</b> Thread(() -&gt; {
+    <b>try</b> { Thread.sleep(500); } <b>catch</b> (InterruptedException e) { }
+});
+System.out.println(<span class="s">"1: "</span> + t.getState());  <span class="c">// NEW</span>
+t.start();
+System.out.println(<span class="s">"2: "</span> + t.getState());  <span class="c">// RUNNABLE</span>
+Thread.sleep(100);                          <span class="c">// damos tiempo a que se duerma</span>
+System.out.println(<span class="s">"3: "</span> + t.getState());  <span class="c">// TIMED_WAITING</span>
+t.join();
+System.out.println(<span class="s">"4: "</span> + t.getState());  <span class="c">// TERMINATED</span></pre>
+  <p><code>getState()</code> es una foto: cuando la lees, el hilo ya puede haber cambiado. Úsalo para aprender y depurar, no para decidir qué hace el programa.</p>
+
+  <h2><span class="tag">Práctica</span> Ejercicio 3 · Predice los estados</h2>
+<pre class="code">Thread lento = <b>new</b> Thread(() -&gt; {
+    <b>try</b> { Thread.sleep(2000); } <b>catch</b> (InterruptedException e) { }
+});
+Thread espera = <b>new</b> Thread(() -&gt; {
+    <b>try</b> { lento.join(); } <b>catch</b> (InterruptedException e) { }
+});
+System.out.println(<span class="s">"A: "</span> + espera.getState());
+lento.start();
+espera.start();
+Thread.sleep(500);
+System.out.println(<span class="s">"B: "</span> + lento.getState());
+System.out.println(<span class="s">"C: "</span> + espera.getState());
+espera.join();
+System.out.println(<span class="s">"D: "</span> + espera.getState());</pre>
+  <div class="ex" id="pred-p1"></div>
+
+  <h2><span class="tag">Test</span> Ciclo de vida</h2>
+  <div data-quiz="t3"></div>
+</section>
+
+<!-- =============== TEMA 2 · BLOQUE 4 =============== -->
+<section data-block="t4" hidden>
+  <div class="eyebrow">Tema 2 · Bloque 4 · Controlar hilos</div>
+  <h1>join, sleep, interrupt y demonios</h1>
+  <p class="lead">Esperar a que acabe, dormirlo, pedirle que pare y decidir si la JVM debe esperarlo al salir.</p>
+
+  <h2><span class="tag">Teoría</span> sleep y join: dormir y esperar</h2>
+  <div class="tbl"><table>
+    <tr><th>Método</th><th>Qué hace</th></tr>
+    <tr><td><code>Thread.sleep(ms)</code></td><td>Duerme al hilo <b>que lo llama</b>, sin gastar CPU. Es <code>static</code>: no duermes a otro hilo, solo a ti mismo.</td></tr>
+    <tr><td><code>t.join()</code></td><td>El hilo que llama espera hasta que <code>t</code> termine. Si ya terminó, vuelve al instante.</td></tr>
+    <tr><td><code>t.join(ms)</code></td><td>Espera como mucho ese tiempo y sigue. Después comprueba con <code>t.isAlive()</code> si terminó.</td></tr>
+  </table></div>
+  <p>Los tres pueden lanzar <code>InterruptedException</code>: es la forma en que Java avisa de que alguien ha pedido a ese hilo que pare.</p>
+
+  <h3>interrupt(): pedir a un hilo que pare</h3>
+<pre class="code">Thread reloj = <b>new</b> Thread(() -&gt; {
+    <b>int</b> s = 0;
+    <b>try</b> {
+        <b>while</b> (<b>true</b>) {
+            System.out.println(<span class="s">"Tic "</span> + s++);
+            Thread.sleep(1000);
+        }
+    } <b>catch</b> (InterruptedException e) {
+        System.out.println(<span class="s">"Me han interrumpido: paro"</span>);
+    }
+});
+reloj.start();
+Thread.sleep(3500);
+reloj.interrupt();   <span class="c">// pide parar, no mata</span>
+reloj.join();</pre>
+  <ul>
+    <li><code>interrupt()</code> pone una <b>marca</b> en el hilo. Si está en <code>sleep</code>, <code>join</code> o <code>wait</code>, salta <code>InterruptedException</code>.</li>
+    <li>Si está calculando, debe mirar la marca él mismo con <code>isInterrupted()</code>.</li>
+    <li>Es <b>cooperativo</b>: el hilo decide cómo y cuándo parar, y puede dejarlo todo ordenado.</li>
+  </ul>
+
+  <h3>Hilos demonio: la JVM no los espera</h3>
+<pre class="code">Thread guardado = <b>new</b> Thread(() -&gt; {
+    <b>while</b> (<b>true</b>) {
+        System.out.println(<span class="s">"Autoguardado..."</span>);
+        <b>try</b> { Thread.sleep(300); } <b>catch</b> (InterruptedException e) { <b>return</b>; }
+    }
+});
+guardado.setDaemon(<b>true</b>);   <span class="c">// siempre antes de start()</span>
+guardado.start();
+Thread.sleep(1000);
+System.out.println(<span class="s">"Fin del main"</span>);  <span class="c">// y el programa acaba</span></pre>
+  <p>La JVM termina cuando acaban todos los hilos <b>normales</b>; a los demonios los corta sin esperar. Sirven para tareas de fondo: autoguardado, limpieza, el recolector de basura. Sin <code>setDaemon(true)</code>, este programa no terminaría nunca.</p>
+
+  <h2><span class="tag">Código</span> Rellena los huecos</h2>
+  <div data-gaps="tg2"></div>
+
+  <h2><span class="tag">Código</span> Ejercicio 4 · Un cronómetro que se para con Enter</h2>
+  <div data-free="tf2"></div>
+
+  <h2><span class="tag">Test</span> Controlar hilos</h2>
+  <div data-quiz="t4"></div>
+</section>
+
+<!-- =============== TEMA 2 · BLOQUE 5 =============== -->
+<section data-block="t5" hidden>
+  <div class="eyebrow">Tema 2 · Bloque 5 · Hilos virtuales (Java 21)</div>
+  <h1>Millones de hilos esperando a la vez</h1>
+  <p class="lead">Hilos ligeros que gestiona la JVM. No hacen el cálculo más rápido: hacen la <b>espera</b> más barata.</p>
+
+  <h2><span class="tag">Teoría</span> De plataforma frente a virtual</h2>
+  <div class="tbl"><table>
+    <tr><th></th><th>De plataforma</th><th>Virtual</th></tr>
+    <tr><td>Lo gestiona</td><td>el sistema operativo</td><td>la JVM</td></tr>
+    <tr><td>Pila</td><td>≈ 1 MB reservado</td><td>unos KB, crece si hace falta</td></tr>
+    <tr><td>Cuántos caben</td><td>miles</td><td>millones</td></tr>
+    <tr><td>Al esperar E/S</td><td>ocupa un hilo del SO</td><td>se aparca y libera el hilo real</td></tr>
+    <tr><td>Ideal para</td><td>CPU-bound</td><td>IO-bound con muchas tareas</td></tr>
+  </table></div>
+  <div class="note ok">Muchos hilos virtuales se reparten unos pocos hilos reales, los <b>portadores</b>. Como los camareros: no esperan junto a la mesa mientras el cliente decide; atienden otra y vuelven.</div>
+
+  <h3>Crear un hilo virtual: igual que siempre</h3>
+<pre class="code">Runnable tarea = () -&gt; System.out.println(Thread.currentThread());
+Thread v = Thread.ofVirtual().name(<span class="s">"virtual-1"</span>).start(tarea);
+Thread p = Thread.ofPlatform().name(<span class="s">"plataforma-1"</span>).start(tarea);
+v.join(); p.join();
+System.out.println(<span class="s">"¿v es virtual? "</span> + v.isVirtual());
+<span class="c">// Atajo: Thread.startVirtualThread(tarea);</span>
+
+<span class="c">VirtualThread[#18,virtual-1]/runnable@ForkJoinPool-1-worker-1</span>
+<span class="c">Thread[#20,plataforma-1,5,main]</span>
+<span class="c">¿v es virtual? true</span></pre>
+  <p>Es un <code>Thread</code> normal: <code>join</code>, <code>sleep</code>, <code>interrupt</code> y <code>getState</code> funcionan igual. La salida muestra el portador que lo ejecuta (<code>ForkJoinPool-1-worker-1</code>).</p>
+
+  <h3>10.000 tareas que esperan 1 segundo ≈ 1,1 s</h3>
+<pre class="code"><b>try</b> (<b>var</b> exec = Executors.newVirtualThreadPerTaskExecutor()) {
+    <b>for</b> (<b>int</b> i = 0; i &lt; 10_000; i++) {
+        exec.submit(() -&gt; {
+            Thread.sleep(Duration.ofSeconds(1));  <span class="c">// simula la red</span>
+            <b>return null</b>;
+        });
+    }
+}   <span class="c">// al cerrar el try, espera a que acaben todas</span></pre>
+  <p>El ejecutor lanza un hilo virtual por cada tarea que le das con <code>submit</code>. Con try-with-resources no hacen falta <code>join</code>: el cierre espera por ti.</p>
+
+  <h3>Ejercicio 5 · 100 hilos de plataforma contra virtuales</h3>
+  <div class="grid">
+    <div class="cell"><b>100 de plataforma · ≈ 10 s</b><span>1000 tareas ÷ 100 hilos = 10 tandas de 1 segundo.</span></div>
+    <div class="cell dark"><b>Virtuales · ≈ 1 s</b><span>Un hilo por tarea: las 1000 esperan a la vez.</span></div>
+  </div>
+  <div class="note">Si la tarea <b>calcula</b> en vez de dormir, los virtuales ya no ganan: los núcleos son los mismos y no hay esperas que aprovechar.</div>
+
+  <h2><span class="tag">Código</span> Rellena los huecos</h2>
+  <div data-gaps="tg3"></div>
+
+  <h2><span class="tag">Test</span> Hilos virtuales</h2>
+  <div data-quiz="t5"></div>
+</section>
+
+<!-- =============== TEMA 2 · PRÁCTICA GUIADA =============== -->
+<section data-block="t6" hidden>
+  <div class="eyebrow">Tema 2 · Práctica guiada</div>
+  <h1>Gestor de descargas: cinco descargas, cuatro versiones</h1>
+  <p class="lead">El mismo programa cuatro veces. Pulsa cada paso y mira cómo el total pasa de <b>la suma</b> a <b>lo que tarda la más lenta</b>.</p>
+
+  <h2><span class="tag">Simulador</span> Mira cada versión</h2>
+  <div class="ex" id="dlSim"></div>
+
+  <h2><span class="tag">Teoría</span> El código de cada paso</h2>
+<pre class="code"><b>static final</b> String[] FICHEROS = {<span class="s">"foto.jpg"</span>, <span class="s">"video.mp4"</span>, <span class="s">"musica.mp3"</span>, <span class="s">"juego.zip"</span>, <span class="s">"apuntes.pdf"</span>};
+<b>static final int</b>[] SEGUNDOS = {1, 4, 2, 2, 1};
+
+<span class="c">// Simula una descarga: tarda 'seg' segundos y dice qué hilo la hace</span>
+<b>static void</b> descargar(String nombre, <b>int</b> seg) {
+    String hilo = Thread.currentThread().getName();
+    System.out.printf(<span class="s">"[%s] empieza %s%n"</span>, hilo, nombre);
+    <b>try</b> {
+        Thread.sleep(seg * 1000L);
+        System.out.printf(<span class="s">"[%s] terminado %s (%d s)%n"</span>, hilo, nombre, seg);
+    } <b>catch</b> (InterruptedException e) {
+        System.out.printf(<span class="s">"[%s] CANCELADO %s%n"</span>, hilo, nombre);  <span class="c">// paso 4</span>
+    }
+}</pre>
+  <details class="sol"><summary>Paso 1 · Secuencial (10,0 s)</summary>
+<pre class="code"><b>static void</b> secuencial() {
+    <b>for</b> (<b>int</b> i = 0; i &lt; FICHEROS.length; i++) descargar(FICHEROS[i], SEGUNDOS[i]);
+}</pre></details>
+  <details class="sol"><summary>Paso 2 · Un hilo por descarga (4,0 s)</summary>
+<pre class="code"><b>static void</b> conHilos() <b>throws</b> InterruptedException {
+    List&lt;Thread&gt; hilos = <b>new</b> ArrayList&lt;&gt;();
+    <b>for</b> (<b>int</b> i = 0; i &lt; FICHEROS.length; i++) {
+        <b>int</b> n = i;
+        Thread t = <b>new</b> Thread(() -&gt; descargar(FICHEROS[n], SEGUNDOS[n]), <span class="s">"D-"</span> + n);
+        hilos.add(t);
+        t.start();
+    }
+    <b>for</b> (Thread t : hilos) t.join();
+}</pre></details>
+  <details class="sol"><summary>Paso 3 · Hilos virtuales (4,0 s)</summary>
+<pre class="code"><b>static void</b> conVirtuales() <b>throws</b> InterruptedException {
+    List&lt;Thread&gt; hilos = <b>new</b> ArrayList&lt;&gt;();
+    <b>for</b> (<b>int</b> i = 0; i &lt; FICHEROS.length; i++) {
+        <b>int</b> n = i;
+        Thread t = Thread.ofVirtual().name(<span class="s">"V-"</span> + n)   <span class="c">// lo único que cambia</span>
+                .start(() -&gt; descargar(FICHEROS[n], SEGUNDOS[n]));
+        hilos.add(t);
+    }
+    <b>for</b> (Thread t : hilos) t.join();
+}</pre>
+  <p>Con 5 descargas no se nota. Con 100.000, solo la versión virtual aguanta.</p></details>
+  <details class="sol"><summary>Paso 4 · Cancelar lo que pase de 3 s (3,0 s)</summary>
+<pre class="code"><b>long</b> limite = System.currentTimeMillis() + 3000;
+<b>for</b> (Thread t : hilos) {
+    <b>long</b> queda = limite - System.currentTimeMillis();
+    <b>if</b> (queda &gt; 0) t.join(queda);    <span class="c">// espera como mucho lo que queda</span>
+    <b>if</b> (t.isAlive()) t.interrupt();  <span class="c">// se pasó: cancelar</span>
+}
+<b>for</b> (Thread t : hilos) t.join();      <span class="c">// que los cancelados acaben</span></pre>
+  <p>Un solo límite para todas: cada <code>join</code> espera solo lo que queda. Ojo: <code>join(0)</code> espera para siempre. Por eso el <code>if</code>.</p></details>
+
+  <h2><span class="tag">Código</span> Escribe tú el paso 4</h2>
+  <div data-free="tf3"></div>
+
+  <h2><span class="tag">Adelanto</span> Próxima sesión (4 nov): condiciones de carrera</h2>
+<pre class="code"><b>static int</b> cuenta = 0;   <span class="c">// compartida: está en el heap</span>
+Thread[] hilos = <b>new</b> Thread[4];
+<b>for</b> (<b>int</b> i = 0; i &lt; 4; i++) {
+    hilos[i] = <b>new</b> Thread(() -&gt; { <b>for</b> (<b>int</b> j = 0; j &lt; 100_000; j++) cuenta++; });
+    hilos[i].start();
+}
+<b>for</b> (Thread h : hilos) h.join();
+System.out.println(<span class="s">"Esperado 400000, obtenido "</span> + cuenta);  <span class="c">// p. ej. 300110, y cada vez otro</span></pre>
+  <div class="note"><code>cuenta++</code> no es una sola operación: lee, suma y escribe. Si dos hilos leen el mismo valor a la vez, uno de los dos incrementos se pierde. Se arregla con sección crítica, <code>synchronized</code>, clases atómicas y <code>Lock</code>.</div>
+
+  <h2><span class="tag">Resumen</span> Lo que tienes que llevarte</h2>
+  <div class="tbl"><table>
+    <tr><td><b>Hilo</b></td><td>Línea de ejecución dentro de un proceso. Comparte el heap; la pila es suya.</td></tr>
+    <tr><td><b>Crear</b></td><td>Runnable o lambda + <code>start()</code>. Nunca llames a <code>run()</code> tú.</td></tr>
+    <tr><td><b>Estados</b></td><td>NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED.</td></tr>
+    <tr><td><b>Esperar</b></td><td><code>join()</code> espera a otro hilo; <code>join(ms)</code> con límite; <code>sleep(ms)</code> te duerme a ti.</td></tr>
+    <tr><td><b>Parar</b></td><td><code>interrupt()</code> pide parar. No te tragues la <code>InterruptedException</code>.</td></tr>
+    <tr><td><b>Virtuales</b></td><td>Para muchas tareas que esperan. Para calcular, tantos hilos como núcleos.</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Test</span> Repaso de la sesión</h2>
+  <div data-quiz="t6"></div>
+</section>
+
 </main>
 </div>
 
 <script>
 /* ---------- datos ---------- */
 const BLOCKS=[
- {id:"b1",name:"Programa, proceso, hilo"},
- {id:"b2",name:"Concurrente y paralela"},
- {id:"b3",name:"Estados de un proceso"},
- {id:"b4",name:"Planificación de CPU"},
- {id:"b5",name:"Procesos en Java"},
- {id:"b6",name:"Comunicar y controlar"},
- {id:"b7",name:"Práctica final"}];
+ {id:"b1",name:"Programa, proceso, hilo",tema:1},
+ {id:"b2",name:"Concurrente y paralela",tema:1},
+ {id:"b3",name:"Estados de un proceso",tema:1},
+ {id:"b4",name:"Planificación de CPU",tema:1},
+ {id:"b5",name:"Procesos en Java",tema:1},
+ {id:"b6",name:"Comunicar y controlar",tema:1},
+ {id:"b7",name:"Práctica final",tema:1},
+ {id:"t1",name:"Proceso frente a hilo",tema:2},
+ {id:"t2",name:"Crear hilos",tema:2},
+ {id:"t3",name:"Ciclo de vida",tema:2},
+ {id:"t4",name:"Controlar hilos",tema:2},
+ {id:"t5",name:"Hilos virtuales",tema:2},
+ {id:"t6",name:"Gestor de descargas",tema:2}];
+const TEMAS={1:"Tema 1 · Multiprocesos",2:"Tema 2 · Multihilos"};
 
 const QUIZ={
 b1:[
@@ -854,8 +1351,208 @@ static void listar() {
 
 const CHECKLIST=["Lanza una aplicación a elegir (editor, calculadora, navegador) de forma portable","Ejecuta una orden del sistema y guarda su salida en salida_AAAAMMDD.log","Lista los procesos lanzados con PID, estado y tiempo de CPU","Termina uno por PID: primero destroy() y, a los 3 s, forzándolo","Al salir, termina todos los hijos que sigan vivos","Probado en Windows y en Linux (o WSL)","Proyecto Maven o Gradle + README con capturas"];
 
+/* ================= TEMA 2 · datos ================= */
+QUIZ.b2.push(
+ {q:"Un programa tarda 100 s y el 80 % se puede paralelizar. Con 4 núcleos, según Amdahl, ¿cuánto tarda?",o:["25 s","40 s","60 s","20 s"],a:1,e:"S = 1 / (0,2 + 0,8/4) = 2,5 → 100 / 2,5 = 40 s."},
+ {q:"Con ese mismo programa (80 % paralelizable) e infinitos núcleos, ¿cuál es la aceleración máxima?",o:["Infinita","8×","5×","2×"],a:2,e:"S = 1 / (1 − p) = 1 / 0,2 = 5. El 20 % secuencial pone el techo."},
+ {q:"Aplicar un filtro a cada foto de una carpeta es un ejemplo de…",o:["Paralelismo trivial: cada foto es independiente","Programación distribuida","Un problema que no se puede paralelizar","Multiprogramación con un núcleo"],a:0,e:"Ningún trozo necesita el resultado de otro (embarrassingly parallel)."},
+ {q:"Calcular la física del mundo de un videojuego es una tarea…",o:["I/O-bound","CPU-bound","Bloqueada","Distribuida"],a:1,e:"Pasa el tiempo calculando. Leer el mando o dibujar en la tarjeta gráfica son I/O-bound."});
+QUIZ.b6.push(
+ {q:"Lanzas 3 hijos en un bucle con start() sin waitFor(). ¿Qué devuelve ProcessHandle.current().children()?",o:["Los procesos hijos directos del proceso actual","Todos los procesos del sistema","Los hilos del proceso","Solo el último hijo lanzado"],a:0,e:"children() da los hijos directos; descendants() recorre todo el árbol."});
+
+QUIZ.t1=[
+ {q:"Un editor revisa la ortografía mientras escribes. ¿Proceso nuevo o hilo?",o:["Proceso, CPU","Hilo, CPU","Proceso, IO","Ninguno"],a:1,e:"Necesita leer el mismo documento que estás editando: compartir datos pide hilo."},
+ {q:"Chrome aísla cada pestaña para que, si una falla, no caigan las demás. Usa…",o:["Hilos","Procesos","Hilos virtuales","Demonios"],a:1,e:"Lo importante es el aislamiento: un fallo no debe tumbar al resto."},
+ {q:"Un servidor web atiende a 200 clientes que consultan el mismo catálogo en memoria:",o:["Hilo · IO","Proceso · CPU","Hilo · CPU","Proceso · IO"],a:0,e:"Comparten el catálogo y cada cliente pasa casi todo el rato esperando a la red."},
+ {q:"IntelliJ compila tu proyecto lanzando Gradle:",o:["Hilo · IO","Hilo · CPU","Proceso · CPU","Demonio"],a:2,e:"Gradle es otro programa, como los que lanzábamos con ProcessBuilder."},
+ {q:"Un videojuego calcula la física de 500 objetos en cada fotograma:",o:["Proceso · IO","Hilo · CPU","Hilo · IO","Proceso · CPU"],a:1,e:"Se reparte el cálculo entre núcleos: tiene sentido ≈ un hilo por núcleo."},
+ {q:"¿Qué tiene cada hilo para él solo?",o:["El heap","Las variables static","Su pila y su contador de programa","Los ficheros abiertos"],a:2,e:"Heap, static, ficheros y conexiones son del proceso y se comparten."},
+ {q:"Para una tarea CPU-bound, ¿cuántos hilos tiene sentido usar?",o:["Uno","≈ tantos como núcleos","Miles","Siempre el doble que núcleos"],a:1,e:"Más hilos que núcleos solo añade cambios de contexto si nadie espera."}];
+QUIZ.t2=[
+ {q:"¿Qué método arranca de verdad un hilo nuevo?",o:["run()","start()","join()","execute()"],a:1,e:"start() pide al sistema un hilo nuevo, y él llama a run()."},
+ {q:"Llamas a t.run() en lugar de t.start(). ¿Qué pasa?",o:["Error de compilación","Se crea el hilo igual","Lo ejecuta el hilo actual (main) como un método normal","Lanza IllegalThreadStateException"],a:2,e:"No se crea hilo: imprimiría «Me ejecuta: main»."},
+ {q:"Llamas dos veces a start() sobre el mismo Thread:",o:["Se ejecuta dos veces","Lanza IllegalThreadStateException","No pasa nada","Se reinicia"],a:1,e:"Un hilo solo arranca una vez."},
+ {q:"¿Por qué es mejor Runnable o lambda que heredar de Thread?",o:["Es más rápido","Separas la tarea del hilo y tu clase puede heredar de otra","Thread está obsoleta","Solo Runnable admite join()"],a:1,e:"Heredar de Thread gasta la única herencia que permite Java."},
+ {q:"Dentro de la lambda de un for no puedes usar i directamente porque…",o:["i es int","i cambia en cada vuelta: la lambda necesita una variable que no cambie","Las lambdas no ven variables locales","Hay que declararla static"],a:1,e:"Por eso se copia en int n = i."},
+ {q:"Haces start() y join() dentro del mismo bucle. Resultado:",o:["Todos a la vez","Cada hilo espera al anterior: vuelves a lo secuencial","Error","Se arrancan dos veces"],a:1,e:"Arranca todos en un bucle y espéralos en otro."},
+ {q:"En HolaHilos, ¿por qué T2 sale a veces antes que T1?",o:["Por un error","Lo decide el planificador","Porque T2 tiene más prioridad","Porque join() los ordena"],a:1,e:"El orden entre hilos no está garantizado."},
+ {q:"¿De qué paquete son Thread y Runnable?",o:["java.util.concurrent","java.lang","java.io","java.thread"],a:1,e:"java.lang: no hay que importar nada."}];
+QUIZ.t3=[
+ {q:"¿Cuántos estados tiene Thread.State?",o:["4","5","6","7"],a:2,e:"NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING y TERMINATED."},
+ {q:"Un hilo dentro de Thread.sleep(500) está en…",o:["WAITING","BLOCKED","TIMED_WAITING","RUNNABLE"],a:2,e:"Espera con tiempo: vuelve solo."},
+ {q:"Un hilo dentro de otro.join() (sin tiempo) está en…",o:["BLOCKED","WAITING","TIMED_WAITING","TERMINATED"],a:1,e:"Esperar a otro hilo es WAITING, no BLOCKED."},
+ {q:"Un hilo esperando a que el usuario escriba en el teclado está en…",o:["WAITING","BLOCKED","RUNNABLE","TIMED_WAITING"],a:2,e:"¡Ojo! La E/S bloqueante aparece como RUNNABLE en Java."},
+ {q:"¿Cuándo está un hilo en BLOCKED?",o:["Al hacer sleep","Al esperar un cerrojo ocupado (synchronized)","Al hacer join","Antes de start()"],a:1,e:"Lo veréis en la próxima sesión con synchronized."},
+ {q:"¿Cómo se para hoy un hilo, si stop() ya no funciona?",o:["destroy()","kill()","interrupt()","System.exit()"],a:2,e:"stop() lanza UnsupportedOperationException desde JDK 20. interrupt() pide parar."},
+ {q:"t.isAlive() devuelve true cuando…",o:["Aún no se ha llamado a start()","Ya arrancó y no ha terminado","Está en NEW","Ha terminado bien"],a:1,e:"NEW y TERMINATED dan false."}];
+QUIZ.t4=[
+ {q:"Thread.sleep(1000) dentro de main duerme a…",o:["Todos los hilos","El hilo main","El último hilo creado","La JVM"],a:1,e:"Es static: solo duerme al hilo que lo llama."},
+ {q:"¿Qué hace interrupt()?",o:["Mata el hilo al instante","Pone una marca; si duerme o espera, salta InterruptedException","Pausa el hilo","Lo pasa a NEW"],a:1,e:"Es cooperativo: el hilo decide cómo parar."},
+ {q:"Un hilo calculando (sin sleep) recibe interrupt(). ¿Qué tiene que hacer?",o:["Nada: Java lo para solo","Mirar la marca con isInterrupted()","Llamar a stop()","Llamar a join()"],a:1,e:"Solo salta la excepción si está en sleep, join o wait."},
+ {q:"En el catch de InterruptedException dentro de un bucle while(!isInterrupted()) debes…",o:["Ignorarla","Volver a poner la marca con Thread.currentThread().interrupt()","Llamar a run()","Hacer System.exit(0)"],a:1,e:"La excepción borra la marca: si no la vuelves a poner, el bucle no para."},
+ {q:"¿Cuándo hay que llamar a setDaemon(true)?",o:["Después de start()","Antes de start()","Da igual","Dentro de run()"],a:1,e:"Después de arrancar lanza IllegalThreadStateException."},
+ {q:"Un programa con un hilo demonio en bucle infinito y main que acaba…",o:["No termina nunca","Termina: la JVM no espera a los demonios","Lanza una excepción","Espera 1 minuto"],a:1,e:"La JVM acaba cuando terminan todos los hilos normales."},
+ {q:"t.join(2000) y t sigue vivo a los 2 s. ¿Qué pasa?",o:["Lanza excepción","El que llama sigue; compruébalo con isAlive()","Se mata t","Se repite la espera"],a:1,e:"Espera como mucho ese tiempo y sigue."}];
+QUIZ.t5=[
+ {q:"¿Quién gestiona los hilos virtuales?",o:["El sistema operativo","La JVM","El programador","El recolector de basura"],a:1,e:"Se reparten unos pocos hilos reales (portadores)."},
+ {q:"¿Para qué son ideales los hilos virtuales?",o:["Cálculo intensivo","Muchas tareas que esperan (IO-bound)","Hilos demonio","Reducir núcleos"],a:1,e:"Hacen la espera más barata, no el cálculo más rápido."},
+ {q:"¿Cómo creas y arrancas un hilo virtual con nombre?",o:["new VirtualThread(tarea)","Thread.ofVirtual().name(\"v\").start(tarea)","Thread.virtual(tarea).run()","new Thread(tarea, true)"],a:1,e:"Atajo sin nombre: Thread.startVirtualThread(tarea)."},
+ {q:"1000 tareas de sleep(1 s) con newFixedThreadPool(100) tardan…",o:["≈ 1 s","≈ 10 s","≈ 100 s","≈ 1000 s"],a:1,e:"1000 ÷ 100 = 10 tandas de 1 segundo."},
+ {q:"Las mismas 1000 tareas con newVirtualThreadPerTaskExecutor() tardan…",o:["≈ 1 s","≈ 10 s","≈ 100 s","No acaban"],a:0,e:"Un hilo por tarea: las 1000 esperan a la vez."},
+ {q:"Si las tareas calculan durante 1 s en lugar de dormir, los virtuales…",o:["Siguen ganando","Ya no ganan: los núcleos son los mismos","Fallan","Van 10 veces más rápido"],a:1,e:"No hay esperas que aprovechar."},
+ {q:"¿Qué hace el try-with-resources sobre un ExecutorService al cerrarse?",o:["Cancela las tareas","Espera a que acaben todas","Nada","Lanza las tareas"],a:1,e:"Por eso no hacen falta joins."}];
+QUIZ.t6=[
+ {q:"5 descargas de 1, 4, 2, 2 y 1 s en secuencia tardan…",o:["4 s","10 s","3 s","5 s"],a:1,e:"Secuencial: la suma."},
+ {q:"Con un hilo por descarga, el total pasa a ser…",o:["La suma","Lo que tarda la más lenta (4 s)","La media","1 s"],a:1,e:"Ahora el total es la más lenta, no la suma."},
+ {q:"Al pasar de new Thread a hilos virtuales con 5 descargas, el tiempo…",o:["Baja a la mitad","Es el mismo","Sube","Baja a 1 s"],a:1,e:"Con 5 no se nota; con 100.000, solo la versión virtual aguanta."},
+ {q:"En el paso 4, ¿por qué el if (queda > 0) antes de t.join(queda)?",o:["Por estilo","Porque join(0) espera para siempre","Para no lanzar excepción","Para ir más rápido"],a:1,e:"join(0) no es «no esperes», es «espera sin límite»."},
+ {q:"Cuatro hilos hacen cuenta++ 100.000 veces cada uno y sale 300.110. ¿Por qué?",o:["Error de Java","Condición de carrera: cuenta++ es leer, sumar y escribir","Falta join()","Hay pocos núcleos"],a:1,e:"Dos hilos leen el mismo valor y un incremento se pierde."}];
+
+GAPS.g6={t:"PadreHijos · lanzar 3 hijos y contar los vivos",d:"Lanza tres hijos InfoHijo sin esperar, cuenta cuántos siguen vivos a los 0,5 s y espera a todos al final.",code:
+`String cp = System.getProperty("java.class.path");
+for (int i = 1; i <= 3; i++) {
+    ProcessBuilder pb = new ProcessBuilder("java", "⟦-cp⟧", cp, "InfoHijo", String.valueOf(i));
+    lista.add(pb.inheritIO().⟦start⟧());
+}
+Thread.sleep(500);
+long vivos = ProcessHandle.current().⟦children⟧()
+        .filter(ProcessHandle::⟦isAlive⟧).⟦count⟧();
+for (Process p : lista) p.⟦waitFor⟧();`};
+GAPS.tg1={t:"HolaHilos",d:"Crea dos hilos con nombre que ejecuten la misma tarea, arráncalos a la vez y que main espere a ambos.",code:
+`⟦Runnable⟧ saludo = () -> System.out.println(
+        "Hola desde " + Thread.⟦currentThread⟧().getName());
+Thread t1 = new ⟦Thread⟧(saludo, "T1");
+Thread t2 = new Thread(saludo, "T2");
+t1.⟦start⟧(); t2.start();
+t1.⟦join⟧(); t2.join();
+System.out.println("Fin del main");`};
+GAPS.tg2={t:"Un reloj que se para y un autoguardado demonio",d:"El reloj se interrumpe a los 3,5 s; el autoguardado no debe impedir que el programa acabe.",code:
+`reloj.start();
+Thread.⟦sleep⟧(3500);
+reloj.⟦interrupt⟧();      // pide parar, no mata
+reloj.join();
+
+guardado.⟦setDaemon⟧(⟦true⟧);   // siempre antes de start()
+guardado.start();
+
+// dentro del hilo que calcula:
+while (!Thread.currentThread().⟦isInterrupted⟧()) { /* ... */ }`};
+GAPS.tg3={t:"Hilos virtuales",d:"Crea un hilo virtual con nombre, comprueba que lo es y lanza 10.000 tareas con un ejecutor.",code:
+`Thread v = Thread.⟦ofVirtual⟧().name("virtual-1").start(tarea);
+v.join();
+System.out.println("¿virtual? " + v.⟦isVirtual⟧());
+
+try (var exec = Executors.⟦newVirtualThreadPerTaskExecutor⟧()) {
+    for (int i = 0; i < 10_000; i++) {
+        exec.⟦submit⟧(() -> { Thread.sleep(1000); return null; });
+    }
+}   // al cerrar, espera a todas`};
+
+FREE.tf1={t:"Cocina con tres cocineros",d:"Lanza 3 hilos llamados Cocinero-1, Cocinero-2 y Cocinero-3. Cada uno prepara 5 platos («Cocinero-2 prepara el plato 3») y espera 100 ms. main imprime «Cocina cerrada» solo cuando los tres han terminado. Ampliación: tantos cocineros como núcleos.",
+start:`public class Cocina {
+    public static void main(String[] args) throws InterruptedException {
+        Thread[] cocineros = new Thread[3];
+        // 1. Bucle que crea y arranca cada cocinero
+        // 2. Bucle aparte que espera a todos
+        // 3. "Cocina cerrada"
+    }
+}`,
+checks:[
+ ["Creas los hilos con new Thread(...)",/new\s+Thread\s*\(/],
+ ["Les pones nombre \"Cocinero-\" + (i + 1)",/"Cocinero-"\s*\+\s*\(\s*\w+\s*\+\s*1\s*\)/],
+ ["Usas Thread.currentThread().getName() para saber quién eres",/currentThread\s*\(\s*\)\s*\.\s*getName/],
+ ["Cada plato espera 100 ms",/sleep\s*\(\s*100\s*\)/],
+ ["Arrancas con start()",/\.start\s*\(\s*\)/],
+ ["Esperas en un bucle aparte, después de arrancar todos",/\.start\s*\(\s*\)[\s\S]*for\s*\([^)]*\)[\s\S]*\.join\s*\(/],
+ ["No haces start() y join() en el mismo bucle",{test:c=>!/\.start\s*\(\s*\)\s*;\s*\w+(\[\w+\])?\.join\s*\(/.test(c)}],
+ ["Imprimes «Cocina cerrada» al final",/Cocina cerrada/]],
+sol:`public static void main(String[] args) throws InterruptedException {
+    Thread[] cocineros = new Thread[3]; // ampliación: availableProcessors()
+    for (int i = 0; i < cocineros.length; i++) {
+        cocineros[i] = new Thread(() -> {
+            String yo = Thread.currentThread().getName();
+            for (int plato = 1; plato <= 5; plato++) {
+                System.out.println(yo + " prepara el plato " + plato);
+                try { Thread.sleep(100); } catch (InterruptedException e) { return; }
+            }
+        }, "Cocinero-" + (i + 1));
+        cocineros[i].start();
+    }
+    for (Thread c : cocineros) c.join();
+    System.out.println("Cocina cerrada");
+}`};
+FREE.tf2={t:"Crono: se para al pulsar Enter",d:"Un hilo Crono guarda la hora de inicio y repite un bucle con sleep(100). main muestra «Pulsa Enter para parar», lo arranca y espera una línea con Scanner. Al pulsar Enter, main lo interrumpe y espera; el crono imprime «Tiempo: 3.4 s».",
+start:`import java.util.Scanner;
+
+public class Crono {
+    public static void main(String[] args) throws InterruptedException {
+        // hilo crono
+        // main: mensaje, start, Scanner, interrupt, join
+    }
+}`,
+checks:[
+ ["Mides el tiempo con System.currentTimeMillis()",/currentTimeMillis\s*\(/],
+ ["El bucle mira la marca con isInterrupted()",/isInterrupted\s*\(/],
+ ["Duermes 100 ms en cada vuelta",/sleep\s*\(\s*100\s*\)/],
+ ["En el catch vuelves a poner la marca con interrupt()",/catch\s*\(\s*InterruptedException[^)]*\)\s*\{[^}]*interrupt\s*\(\s*\)/],
+ ["main lee una línea con Scanner",/nextLine\s*\(/],
+ ["main interrumpe al cronómetro",/\w+\.interrupt\s*\(\s*\)/],
+ ["main espera a que termine con join()",/\.join\s*\(\s*\)/],
+ ["Imprimes el tiempo en segundos",/\/\s*1000(\.0)?/]],
+sol:`Thread crono = new Thread(() -> {
+    long ini = System.currentTimeMillis();
+    while (!Thread.currentThread().isInterrupted()) {
+        try { Thread.sleep(100); }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // la excepción borró la marca: la volvemos a poner
+        }
+    }
+    System.out.printf("Tiempo: %.1f s%n", (System.currentTimeMillis() - ini) / 1000.0);
+}, "Crono");
+
+System.out.println("Pulsa Enter para parar");
+crono.start();
+new Scanner(System.in).nextLine();
+crono.interrupt();
+crono.join();`};
+FREE.tf3={t:"conLimite(): cancelar lo que pase de 3 s",d:"Lanza una descarga por hilo virtual (V-0, V-1…). Espera como mucho 3 s en total y cancela las que sigan vivas. El total debe salir 3,0 s.",
+start:`static void conLimite() throws InterruptedException {
+    List<Thread> hilos = new ArrayList<>();
+    // 1. Un hilo virtual por descarga
+    // 2. Un único límite de 3 s para todas
+    // 3. Cancela las que sigan vivas y espera a que acaben
+}`,
+checks:[
+ ["Creas hilos virtuales con Thread.ofVirtual()",/Thread\s*\.\s*ofVirtual\s*\(/],
+ ["Copias i en una variable para la lambda",/int\s+\w+\s*=\s*i\s*;/],
+ ["Calculas un límite con currentTimeMillis() + 3000",/currentTimeMillis\s*\(\s*\)\s*\+\s*3000/],
+ ["Esperas solo lo que queda: join(queda)",/\.join\s*\(\s*\w+\s*\)/],
+ ["Evitas join(0) con un if (queda > 0)",/if\s*\(\s*\w+\s*>\s*0\s*\)/],
+ ["Compruebas si sigue vivo con isAlive()",/isAlive\s*\(/],
+ ["Cancelas con interrupt()",/\.interrupt\s*\(\s*\)/]],
+sol:`static void conLimite() throws InterruptedException {
+    List<Thread> hilos = new ArrayList<>();
+    for (int i = 0; i < FICHEROS.length; i++) {
+        int n = i;
+        hilos.add(Thread.ofVirtual().name("V-" + n)
+            .start(() -> descargar(FICHEROS[n], SEGUNDOS[n])));
+    }
+    long limite = System.currentTimeMillis() + 3000;
+    for (Thread t : hilos) {
+        long queda = limite - System.currentTimeMillis();
+        if (queda > 0) t.join(queda);   // espera como mucho lo que queda
+        if (t.isAlive()) t.interrupt(); // se pasó: cancelar
+    }
+    for (Thread t : hilos) t.join();    // que los cancelados acaben
+}`};
+
+const PRED={p1:{t:"¿Qué imprimen A, B, C y D?",d:"Elige el estado de cada línea y comprueba. Luego piensa qué cambia si pones lento.join(5000).",
+ items:[["A","NEW","espera todavía no ha arrancado."],["B","TIMED_WAITING","lento lleva 0,5 s de sus 2 s de sleep."],["C","WAITING","espera está dentro de lento.join(), sin límite."],["D","TERMINATED","main ha esperado a espera, que esperó a lento."]],
+ extra:"Con lento.join(5000), C pasa a TIMED_WAITING porque ahora la espera tiene límite. Lo demás no cambia: lento acaba antes de los 5 s."}};
+const TSTATES=["NEW","RUNNABLE","BLOCKED","WAITING","TIMED_WAITING","TERMINATED"];
+
 /* ---------- estado ---------- */
-let S={quiz:{},gaps:{},free:{},done:{},check:{}};
+let S={quiz:{},gaps:{},free:{},done:{},check:{},pred:{}};
 try{const r=localStorage.getItem("psp-t1");if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
 function save(){try{localStorage.setItem("psp-t1",JSON.stringify(S));}catch(e){}updateProgress();}
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -869,14 +1566,17 @@ function blockState(id){
 }
 function renderNav(cur){
   nav.innerHTML="";
+  let lastT=0;
   BLOCKS.forEach((b,i)=>{
+    if(b.tema!==lastT){lastT=b.tema;const h=document.createElement("div");h.className="nav-group";h.textContent=TEMAS[b.tema];nav.appendChild(h);}
     const st=blockState(b.id);
     const lab={new:"NUEVO",run:"EN CURSO",done:"HECHO"}[st];
     const btn=document.createElement("button");
     btn.setAttribute("aria-current",b.id===cur);
-    btn.innerHTML=`<span class="pid">PID ${100+i*7}</span><span>${b.name}</span><span class="state ${st==="run"?"run":st==="done"?"done":""}">${lab}</span>`;
+    btn.innerHTML=`<span class="pid">${b.tema===2?"TID":"PID"} ${b.tema===2?1+(i-7):100+i*7}</span><span>${b.name}</span><span class="state ${st==="run"?"run":st==="done"?"done":""}">${lab}</span>`;
     btn.onclick=()=>show(b.id,true);
     nav.appendChild(btn);
+    if(b.id===cur&&getComputedStyle(nav).flexDirection==="row")requestAnimationFrame(()=>{nav.scrollLeft=btn.offsetLeft-nav.offsetLeft-90;});
   });
 }
 let current="b1";
@@ -995,7 +1695,7 @@ function initTrans(){
 }
 
 /* ---------- simulador ---------- */
-const PRESETS={e5:{alg:"fcfs",q:2,p:[[8,0],[4,0],[1,0]]},e6:{alg:"rr",q:2,p:[[8,0],[4,0],[1,0]]},e6b:{alg:"rr",q:3,p:[[7,0],[4,2],[2,4]]}};
+const PRESETS={e5:{alg:"fcfs",q:2,p:[[8,0],[4,0],[1,0]]},e6:{alg:"rr",q:2,p:[[8,0],[4,0],[1,0]]},e6b:{alg:"rr",q:3,p:[[7,0],[4,2],[2,4]]},bol4:{alg:"rr",q:2,p:[[6,0],[3,1],[1,2],[4,3]]}};
 const COLORS=["--p1","--p2","--p3","--p4","--p5"];
 const tbody=document.querySelector("#sProcs tbody");
 function addRow(b,a){
@@ -1073,11 +1773,82 @@ function updateProgress(){
   Object.entries(QUIZ).forEach(([id,qs])=>qs.forEach((q,i)=>{total++;const s=S.quiz[id+"-"+i];if(s!==undefined){got+= s===q.a?1:.4;if(s===q.a)ok++;}}));
   Object.keys(GAPS).forEach(k=>{total+=2;if(S.gaps[k]&&S.gaps[k].ok)got+=2;});
   Object.keys(FREE).forEach(k=>{total+=2;if(S.free[k]&&S.free[k].ok)got+=2;});
+  Object.keys(PRED).forEach(k=>{total+=2;if(S.pred&&S.pred[k]&&S.pred[k].ok)got+=2;});
   BLOCKS.forEach(b=>{total+=2;if(S.done[b.id])got+=2;});
   const pct=Math.round(got/total*100);
   document.getElementById("pct").textContent=pct+" %";document.getElementById("fill").style.width=pct+"%";
   const nq=Object.values(QUIZ).reduce((a,q)=>a+q.length,0);
   document.getElementById("stats").textContent=`${ok}/${nq} preguntas acertadas`;
+}
+
+/* ---------- tema 2: predecir estados ---------- */
+function renderPred(host,id){
+  const P=PRED[id];const saved=(S.pred||{})[id]||{};
+  host.innerHTML=`<div class="ex-title">${esc(P.t)}</div><p class="ex-desc">${esc(P.d)}</p><div class="pred"></div>
+  <div class="row"><button class="btn">Comprobar</button><button class="btn ghost" data-a="clr">Borrar</button><span class="status"></span></div><div class="extra"></div>`;
+  const g=host.querySelector(".pred"),st=host.querySelector(".status"),ex=host.querySelector(".extra");
+  const sels=P.items.map(([lab],k)=>{
+    const l=document.createElement("span");l.className="lbl";l.textContent=lab+":";g.appendChild(l);
+    const s=document.createElement("select");s.setAttribute("aria-label","Estado en "+lab);
+    s.add(new Option("— elige —",""));TSTATES.forEach(t=>s.add(new Option(t,t)));
+    s.value=(saved.v&&saved.v[k])||"";g.appendChild(s);
+    const w=document.createElement("span");w.className="why";w.hidden=true;g.appendChild(w);
+    s.onchange=()=>{s.classList.remove("ok","ko");w.hidden=true;store(false);};
+    return [s,w];});
+  function store(mark){
+    let ok=0;sels.forEach(([s,w],k)=>{const good=s.value===P.items[k][1];if(good)ok++;
+      if(mark&&s.value){s.classList.add(good?"ok":"ko");s.classList.remove(good?"ko":"ok");w.hidden=false;w.textContent=(good?"Sí: ":"No, es "+P.items[k][1]+": ")+P.items[k][2];}});
+    S.pred=S.pred||{};S.pred[id]={v:sels.map(([s])=>s.value),ok:ok===sels.length};save();
+    if(mark){st.textContent=ok===sels.length?"Todo bien":`${ok}/${sels.length} bien`;st.className="status "+(ok===sels.length?"ok":"ko");
+      ex.innerHTML=ok===sels.length?`<div class="verdict ok">${esc(P.extra)}</div>`:"";}
+  }
+  host.querySelector(".btn").onclick=()=>store(true);
+  host.querySelector('[data-a="clr"]').onclick=()=>{sels.forEach(([s,w])=>{s.value="";s.classList.remove("ok","ko");w.hidden=true;});ex.innerHTML="";st.textContent="";store(false);};
+  if(saved.v&&saved.v.some(Boolean))store(true);
+}
+
+/* ---------- tema 2: simulador de descargas ---------- */
+const DL={f:["foto.jpg","video.mp4","musica.mp3","juego.zip","apuntes.pdf"],s:[1,4,2,2,1]};
+const DLSTEPS=[
+ {t:"1 · Secuencial",pre:"main",note:"Solo el hilo main: cada descarga empieza cuando acaba la anterior. El total es la <b>suma</b>."},
+ {t:"2 · Un hilo por descarga",pre:"D-",note:"<code>new Thread</code> + <code>start</code> + <code>join</code>. Todas a la vez: el total es <b>la más lenta</b>."},
+ {t:"3 · Hilos virtuales",pre:"V-",note:"Solo cambia cómo se crea el hilo (<code>Thread.ofVirtual()</code>). Mismo tiempo; la diferencia se nota con 100.000 descargas."},
+ {t:"4 · Límite de 3 s",pre:"V-",note:"<code>join(queda)</code> + <code>isAlive()</code> + <code>interrupt()</code>: lo que pasa de 3 s se cancela."}];
+function initDl(){
+  const host=document.getElementById("dlSim");
+  host.innerHTML=`<div class="steps">${DLSTEPS.map((s,i)=>`<button class="btn ghost" data-i="${i}" aria-pressed="false">${s.t}</button>`).join("")}</div>
+  <div class="dl"></div><div class="dl-axis">${[0,2,4,6,8,10].map(x=>`<span style="left:${x*10}%">${x} s</span>`).join("")}</div>
+  <div class="dl-total"></div>`;
+  const grid=host.querySelector(".dl"),tot=host.querySelector(".dl-total");
+  const lanes=DL.f.map((f,i)=>{const nm=document.createElement("span");nm.className="nm";grid.appendChild(nm);
+    const ln=document.createElement("div");ln.className="lane";const b=document.createElement("div");b.className="bar";ln.appendChild(b);grid.appendChild(ln);return[nm,b];});
+  function go(k){
+    host.querySelectorAll(".steps .btn").forEach(b=>b.setAttribute("aria-pressed",b.dataset.i==k));
+    let t=0,total=0;
+    DL.f.forEach((f,i)=>{const [nm,b]=lanes[i];const sec=DL.s[i];
+      const start=k===0?t:0;let end=start+sec;const cut=k===3&&end>3;if(cut)end=3;t+=sec;total=Math.max(total,end);
+      const who=k===0?"main":DLSTEPS[k].pre+i;
+      nm.textContent=f;nm.title=f;
+      b.style.left=start*10+"%";b.style.width=(end-start)*10+"%";
+      b.className="bar"+(cut?" cut":"");b.style.background=cut?"":`var(${COLORS[i%5]})`;
+      b.textContent=cut?`[${who}] CANCELADO`:`[${who}] ${sec} s`;b.title=`${f}: ${start}–${end} s`;});
+    tot.innerHTML=`<b>Total: ${total.toFixed(1).replace(".",",")} s</b> · ${DLSTEPS[k].note}`;
+  }
+  host.querySelectorAll(".steps .btn").forEach(b=>b.onclick=()=>go(+b.dataset.i));
+  go(0);
+}
+
+/* ---------- tema 1: Amdahl ---------- */
+function initAmd(){
+  const P=document.getElementById("amdP"),N=document.getElementById("amdN"),T=document.getElementById("amdT"),out=document.getElementById("amdOut"),tbl=document.getElementById("amdTbl");
+  const fmt=x=>(Math.round(x*100)/100).toString().replace(".",",");
+  function calc(){
+    const p=Math.min(100,Math.max(0,+P.value||0))/100,n=Math.max(1,parseInt(N.value)||1),t=Math.max(1,+T.value||1);
+    const S1=k=>1/((1-p)+p/k);const s=S1(n);
+    out.innerHTML=`${fmt(s)}× más rápido <small>· tarda ${fmt(t/s)} s en vez de ${fmt(t)} s · máximo teórico ${p<1?fmt(1/(1-p))+"×":"sin límite"}</small>`;
+    tbl.innerHTML=`<table><tr><th>Núcleos</th><th>Aceleración</th><th>Tiempo</th></tr>${[1,2,4,8,16].map(k=>`<tr${k===n?' style="background:var(--accent-soft)"':""}><td>${k}</td><td>${fmt(S1(k))}×</td><td>${fmt(t/S1(k))} s</td></tr>`).join("")}<tr><td>∞</td><td>${p<1?fmt(1/(1-p))+"×":"∞"}</td><td>${fmt(t*(1-p))} s</td></tr></table>`;
+  }
+  [P,N,T].forEach(i=>i.addEventListener("input",calc));calc();
 }
 
 /* ---------- arranque ---------- */
@@ -1092,7 +1863,7 @@ document.querySelectorAll("main>section").forEach((sec,i)=>{
   if(next)bar.querySelector("button").onclick=()=>show(next.id,true);
   sec.appendChild(bar);
 });
-initTrans();renderChecklist();
+initTrans();renderChecklist();initAmd();initDl();renderPred(document.getElementById("pred-p1"),"p1");
 document.getElementById("sAdd").onclick=()=>addRow(3,0);
 document.getElementById("sRun").onclick=runSim;
 document.getElementById("sPreset").onchange=e=>{loadPreset(e.target.value);if(e.target.value)runSim();};
