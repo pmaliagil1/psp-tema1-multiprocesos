@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Web interactiva para estudiar PSP (2.º DAM): Tema 1 Multiprocesos y Tema 2 Multihilos en Java, con tests, simuladores y ejercicios de código.">
+<meta name="description" content="Web interactiva para estudiar PSP (2.º DAM): Tema 1 Multiprocesos y Tema 2 Multihilos en Java, con una ruta paso a paso de 11 niveles, tests, simuladores y ejercicios de código.">
 <title>PSP · Multiprocesos y multihilos</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -197,6 +197,48 @@ select,input[type=number],input[type=text].in{font:inherit;font-size:14.5px;padd
   .dl-axis{margin-left:94px}
   main{padding-left:max(16px,env(safe-area-inset-left,0px))}
 }
+
+/* ruta paso a paso */
+pre.code.out{background:var(--sunk);color:var(--fg);font-size:13px}
+.pc{border-left:4px solid var(--accent);background:var(--surface);border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:15px}
+.pc pre.code{margin:8px 0 0}
+.rmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:14px 0}
+.lvl{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:0}
+.lvl:hover{border-color:var(--accent)} .lvl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lvl-n{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted)}
+.lvl-t{font-family:var(--display);font-weight:700;font-size:15.5px;line-height:1.25}
+.lvl-bar{height:5px;border-radius:3px;background:var(--sunk);overflow:hidden;margin-top:4px}
+.lvl-bar i{display:block;height:100%;background:var(--accent)}
+.lvl-s{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.lvl.next{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)} .lvl.next .lvl-n{color:var(--accent);font-weight:600}
+.lvl.done{background:var(--ok-soft);border-color:transparent} .lvl.done .lvl-s{color:var(--ok)}
+.pars{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.pars>div{min-width:0}
+.pars-h{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.pars-pool,.pars-prog{display:flex;flex-direction:column;gap:4px;min-height:60px;padding:8px;border-radius:10px}
+.pars-pool{background:var(--sunk)} .pars-prog{background:var(--code-bg)}
+.pline{all:unset;cursor:pointer;display:block;padding:6px 10px;border-radius:6px;font-family:var(--mono);font-size:12.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word;border:1px solid transparent}
+.pars-pool .pline{background:var(--surface);border-color:var(--line);color:var(--fg)}
+.pars-prog .pline{color:var(--code-fg);background:#ffffff0d}
+.pline:hover{border-color:var(--accent)} .pline:focus-visible{outline:2px solid var(--accent)}
+.pline code{font:inherit;background:none;padding:0}
+.pars-prog .pline.ok{border-color:var(--ok);box-shadow:inset 3px 0 0 var(--ok)}
+.pars-prog .pline.ko{border-color:var(--bad);box-shadow:inset 3px 0 0 var(--bad)}
+.pars-empty{font-size:13px;color:var(--muted);padding:8px}
+.pars-prog .pars-empty{color:var(--code-com)}
+.bug{background:var(--code-bg);border-radius:10px;padding:8px 0;margin-top:12px;overflow-x:auto}
+.bline{all:unset;cursor:pointer;display:flex;gap:12px;padding:2px 14px;font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--code-fg);white-space:pre;min-width:max-content;width:100%;box-sizing:border-box}
+.bline:hover{background:#ffffff12} .bline:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.bline[disabled]{cursor:default;background:none}
+.bline .ln{color:var(--code-com);width:2ch;text-align:right;flex:none;user-select:none}
+.bline code{font:inherit;background:none;padding:0;color:inherit}
+.bline code .c{color:var(--code-com)} .bline code .s{color:var(--code-str)}
+.bline.ko{background:#F2778C26} .bline.ok{background:#3CC79F2E;box-shadow:inset 3px 0 0 var(--ok)}
+.rchk{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.rchk input,.calck{width:18px;height:18px;accent-color:var(--accent);margin-top:3px}
+#rcal a{color:var(--fg);text-decoration-color:var(--line);text-underline-offset:3px}
+#rcal a:hover{color:var(--accent)}
+@media (max-width:820px){.pars{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 </style>
@@ -223,13 +265,572 @@ select,input[type=number],input[type=text].in{font:inherit;font-size:14.5px;padd
     <div class="meter-row" style="margin-top:6px"><span id="stats">0 aciertos</span></div>
   </div>
   <nav id="nav"></nav>
-  <div class="legend">Tema 1 y Tema 2 en una sola web. Cada bloque tiene teoría, un test que se corrige al marcar y ejercicios de código. Tu progreso se guarda en este navegador.</div>
+  <div class="legend">Si te cuesta la asignatura, empieza por la <b>Ruta paso a paso</b>: 11 niveles de menos a más. Después, Tema 1 y Tema 2 por bloques. Cada bloque tiene teoría, un test que se corrige al marcar y ejercicios de código. Tu progreso se guarda en este navegador.</div>
 </aside>
 
 <main id="main">
 
+<!-- =============== RUTA PASO A PASO =============== -->
+<section data-block="r0" hidden>
+  <div class="eyebrow">Ruta paso a paso · Empieza aquí</div>
+  <h1>Aprende PSP subiendo de nivel</h1>
+  <p class="lead">No hace falta dominar Java antes de empezar. Cada nivel te explica solo el Java que necesitas para ese paso y te pone a escribir procesos e hilos desde el primer día. Se sube de nivel con programas pequeños hasta poder hacer los del boletín y el examen.</p>
+
+  <h2><span class="tag">Método</span> Qué hay en cada nivel</h2>
+  <div class="grid">
+    <div class="cell"><b>1 · Java que necesitas</b><span>Una tabla con cada pieza nueva de Java explicada en una línea.</span></div>
+    <div class="cell"><b>2 · Ejemplo comentado</b><span>Un programa probado y explicado línea a línea. Léelo con calma.</span></div>
+    <div class="cell"><b>3 · Ordena las líneas</b><span>Las líneas del programa están revueltas: ponlas en orden. Así se entiende la estructura sin pelearte con la sintaxis.</span></div>
+    <div class="cell"><b>4 · Rellena huecos</b><span>Escribes solo las palabras clave. Así se te queda cómo se escriben.</span></div>
+    <div class="cell"><b>5 · Caza el fallo</b><span>Un programa con el error típico de ese tema. Pulsa la línea mala.</span></div>
+    <div class="cell"><b>6 · Jefe del nivel</b><span>Escribes un programa entero a partir de una plantilla. Te dice qué piezas te faltan.</span></div>
+  </div>
+  <div class="note ok"><b>La regla más importante:</b> el jefe de cada nivel, ejecútalo de verdad en tu PC. La web comprueba si tu código tiene las piezas, pero solo compilando y ejecutando ves si funciona. Cada nivel acaba con lo que tienes que ver en la consola.</div>
+
+  <h2><span class="tag">Mapa</span> Tus niveles</h2>
+  <div id="rmap" class="rmap"></div>
+
+  <h2><span class="tag">Plan</span> Calendario hasta la prueba del 2 de diciembre</h2>
+  <p>Está ajustado a la planificación de tu profesor: <b>sincronización el 4 de noviembre</b> y <b>productor-consumidor y semáforos el 11</b>. Así llegas a cada clase habiendo practicado lo anterior. Calcula entre 45 y 60 minutos por nivel, por la mañana antes de clase.</p>
+  <div class="tbl"><table id="rcal"></table></div>
+
+  <h2><span class="tag">Tu PC</span> Antes de empezar</h2>
+  <p>Todos los programas de la ruta tienen esta forma. Apréndetela de memoria, porque la escribirás cientos de veces:</p>
+  <pre class="code" data-src="plantilla"></pre>
+  <div class="tbl"><table>
+    <tr><th>Pieza</th><th>Qué es</th></tr>
+    <tr><td><code>public class Nombre</code></td><td>El nombre de la clase tiene que ser <b>igual</b> que el del fichero: <code>Nombre.java</code>.</td></tr>
+    <tr><td><code>main(String[] args)</code></td><td>Por aquí empieza el programa. <code>args</code> son las palabras que escribes detrás: con <code>java Nombre hola 7</code>, <code>args[0]</code> vale <code>"hola"</code> y <code>args[1]</code> vale <code>"7"</code>.</td></tr>
+    <tr><td><code>throws Exception</code></td><td>"Si algo falla, para el programa y enséñame el error". Para empezar es lo más cómodo. En el nivel 1 verás la otra forma, <code>try</code>/<code>catch</code>.</td></tr>
+  </table></div>
+  <h3>Cómo ejecutar padre e hijo</h3>
+  <div class="grid">
+    <div class="cell"><b>En IntelliJ</b><span>Pon todas las clases del nivel en la misma carpeta <code>src</code> y ejecuta solo el <b>padre</b> (botón ▶). El hijo lo lanza él.</span></div>
+    <div class="cell dark"><b>En la terminal</b><span><code>javac *.java</code> compila todas las clases.<br><code>java Padre</code> ejecuta el padre.</span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Si ves este error</th><th>Qué pasa y cómo se arregla</th></tr>
+    <tr><td><code>Cannot run program "java"</code></td><td>Windows no encuentra <code>java</code> en el PATH. Usa la misma JVM que el padre: <code>Path.of(System.getProperty("java.home"), "bin", "java").toString()</code> en lugar de <code>"java"</code>.</td></tr>
+    <tr><td><code>Could not find or load main class Hijo</code></td><td>No has compilado el hijo, o falta <code>"-cp", cp</code> en la orden.</td></tr>
+    <tr><td><code>class X is public, should be declared in a file named X.java</code></td><td>El nombre de la clase y el del fichero no coinciden.</td></tr>
+  </table></div>
+</section>
+
+<section data-block="r1" hidden>
+  <div class="eyebrow">Ruta · Nivel 1</div>
+  <h1>Tu primer proceso</h1>
+  <p class="lead">Objetivo: que tu programa Java lance otro programa, espere a que acabe y lea su código de salida. Es lo mismo que haces cuando escribes una orden en la terminal, pero lo hace tu programa.</p>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>new ProcessBuilder("java", "-version")</code></td><td>Crea un objeto que <b>guarda la orden</b> que quieres ejecutar. Cada palabra va en sus propias comillas.</td></tr>
+    <tr><td><code>pb.inheritIO()</code></td><td>Lo que escriba el hijo sale en <b>tu</b> consola.</td></tr>
+    <tr><td><code>Process p = pb.start()</code></td><td><b>Ejecuta</b> la orden: nace el proceso hijo. <code>p</code> es el mando a distancia para controlarlo.</td></tr>
+    <tr><td><code>int codigo = p.waitFor()</code></td><td>El padre se queda esperando hasta que el hijo acabe. Devuelve el código de salida: <b>0 = todo bien</b>.</td></tr>
+    <tr><td><code>try { … } catch (IOException e) { … }</code></td><td>Intenta lo de dentro. Si <code>start()</code> falla (el programa no existe), salta al <code>catch</code> en vez de romperse.</td></tr>
+    <tr><td><code>InterruptedException</code></td><td>Puede saltar mientras esperas en <code>waitFor()</code>. Java te obliga a tratarla.</td></tr>
+    <tr><td><code>System.getProperty("os.name")</code></td><td>Un texto con el sistema: <code>"Windows 11"</code>, <code>"Linux"</code>…</td></tr>
+    <tr><td><code>a ? b : c</code></td><td>Un <code>if</code> en una línea: si <code>a</code> es verdad vale <code>b</code>, si no vale <code>c</code>.</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> Lanzar <code>java -version</code></h2>
+  <pre class="code" data-src="r1ex"></pre>
+  <p>Salida (los números de versión y de PID cambian en tu PC):</p>
+  <pre class="code out">openjdk version "21.0.5" 2024-10-15
+OpenJDK Runtime Environment (build 21.0.5+11)
+He lanzado un hijo con PID 368
+El hijo ha terminado con código 0</pre>
+  <div class="note">¿Por qué "He lanzado…" puede salir <b>antes o después</b> de la versión? Porque padre e hijo se ejecutan <b>a la vez</b> y el planificador decide quién escribe primero. Lo que sí es seguro: "ha terminado" sale al final, porque va después de <code>waitFor()</code>.</div>
+
+  <h2><span class="tag">Ordenar</span> Pon el programa en orden</h2>
+  <div data-pars="p1"></div>
+  <h2><span class="tag">Huecos</span> Las palabras clave</h2>
+  <div data-gaps="rg1"></div>
+  <h2><span class="tag">Fallo</span> ¿Qué línea está mal?</h2>
+  <div data-bug="rb1"></div>
+  <h2><span class="tag">Jefe</span> Ping que funciona en Windows y en Linux</h2>
+  <div data-free="rf1"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> En Windows debes ver dos respuestas de <code>localhost</code> y al final <code>ping ha terminado con código 0</code>. Cambia <code>"ping"</code> por <code>"pinng"</code> y ejecuta otra vez: ahora salta el <code>catch</code> de <code>IOException</code>.</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r1"></div>
+</section>
+
+<section data-block="r2" hidden>
+  <div class="eyebrow">Ruta · Nivel 2</div>
+  <h1>Un hijo escrito por ti</h1>
+  <p class="lead">Objetivo: lanzar como hijo <b>tu propia clase Java</b>, pasarle datos por argumentos y que te conteste con su código de salida. Es el patrón del cocinero y el pinche.</p>
+  <pre class="code out">Padre                                   Hijo (Par)
+  │── start(): java -cp … Par 7 ──────────►│  args[0] = "7"
+  │   waitFor(): espero                     │  7 es impar
+  │◄──────────────── System.exit(1) ────────│
+  │  codigo = 1 → "es impar"                ✕</pre>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>String[] args</code></td><td>Un array con las palabras que van detrás del nombre. Con <code>java Par 7</code>, <code>args[0]</code> es <code>"7"</code> (texto, no número). La primera posición es la <b>0</b>.</td></tr>
+    <tr><td><code>Integer.parseInt(args[0])</code></td><td>Convierte texto en número: <code>"7"</code> → <code>7</code>. Si el texto no es un número lanza <code>NumberFormatException</code>.</td></tr>
+    <tr><td><code>String.valueOf(7)</code></td><td>Lo contrario: número → texto. <code>ProcessBuilder</code> solo acepta textos.</td></tr>
+    <tr><td><code>n % 2 == 0</code></td><td><code>%</code> es el resto de dividir. Si el resto entre 2 es 0, es par. <code>==</code> compara y <code>=</code> asigna.</td></tr>
+    <tr><td><code>System.exit(1)</code></td><td>Termina el programa y le entrega ese número al padre. Un <code>return</code> en el <code>main</code> siempre da 0.</td></tr>
+    <tr><td><code>System.getProperty("java.class.path")</code></td><td>Dónde están tus <code>.class</code>. Se lo pasas al hijo con <code>"-cp", cp</code> para que encuentre su clase.</td></tr>
+    <tr><td><code>String[] edades = {"25", "16"};</code><br><code>for (String e : edades) { … }</code></td><td>Un array escrito a mano, y un bucle que lo recorre: en cada vuelta <code>e</code> vale un elemento.</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> ¿Par o impar? Lo decide el hijo</h2>
+  <pre class="code" data-src="r2hijo"></pre>
+  <pre class="code" data-src="r2padre"></pre>
+  <pre class="code out">Hijo: me han pasado el 7
+Padre: es impar</pre>
+
+  <h2><span class="tag">Ordenar</span> Ordena el hijo</h2>
+  <div data-pars="p2"></div>
+  <h2><span class="tag">Huecos</span> El padre</h2>
+  <div data-gaps="rg2"></div>
+  <h2><span class="tag">Fallo</span> ¿Qué línea está mal?</h2>
+  <div data-bug="rb2"></div>
+  <h2><span class="tag">Jefe</span> El portero de la discoteca</h2>
+  <div data-free="rf2"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Crea <code>Portero.java</code> y <code>Discoteca.java</code>, ejecuta <code>Discoteca</code> y debes ver:<pre class="code out">25: pasa
+16: no pasa
+abc: dato no válido</pre></div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r2"></div>
+</section>
+
+<section data-block="r3" hidden>
+  <div class="eyebrow">Ruta · Nivel 3</div>
+  <h1>Escucha lo que dice el hijo</h1>
+  <p class="lead">Objetivo: el código de salida solo sirve para números pequeños (de 0 a 255). Para devolver cualquier dato, el hijo lo <b>imprime</b> con <code>println</code> y el padre lo <b>lee</b> por una tubería.</p>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>BufferedReader br = p.inputReader()</code></td><td>Un lector conectado a lo que el hijo escribe con <code>System.out.println</code>.</td></tr>
+    <tr><td><code>br.readLine()</code></td><td>Lee una línea. Devuelve <code>null</code> cuando el hijo ya no va a escribir más (ha terminado).</td></tr>
+    <tr><td><code>while ((linea = br.readLine()) != null)</code></td><td>Lee una línea, la guarda en <code>linea</code> y comprueba que no sea <code>null</code>, todo a la vez. Es <b>la</b> línea de este tema.</td></tr>
+    <tr><td><code>try (BufferedReader br = …) { … }</code></td><td>"Try con recursos": cuando acaba el bloque, cierra el lector solo.</td></tr>
+    <tr><td><code>p.errorReader()</code></td><td>Igual que <code>inputReader()</code>, pero para lo que el hijo escribe con <code>System.err</code>.</td></tr>
+    <tr><td><code>total += r;</code></td><td>Lo mismo que <code>total = total + r;</code></td></tr>
+  </table></div>
+  <div class="note"><b>Dos reglas de oro.</b> 1) Lee <b>antes</b> de <code>waitFor()</code>: la tubería guarda unos 64 KB; si el hijo la llena y tú estás en <code>waitFor()</code> sin leer, os quedáis esperando los dos para siempre. 2) <b>No uses <code>inheritIO()</code></b> si quieres leer: la salida iría a la consola y no a la tubería.</div>
+
+  <h2><span class="tag">Ejemplo</span> El padre lee la tabla del 7</h2>
+  <pre class="code" data-src="r3hijo"></pre>
+  <pre class="code" data-src="r3padre"></pre>
+  <pre class="code out">[hijo] 7 x 1 = 7
+[hijo] 7 x 2 = 14
+[hijo] 7 x 3 = 21
+Código: 0</pre>
+
+  <h2><span class="tag">Ordenar</span> Ordena el bucle de lectura</h2>
+  <div data-pars="p3"></div>
+  <h2><span class="tag">Huecos</span> Leer la salida</h2>
+  <div data-gaps="rg3"></div>
+  <h2><span class="tag">Fallo</span> NumberFormatException: Cannot parse null string</h2>
+  <div data-bug="rb3"></div>
+  <h2><span class="tag">Jefe</span> Tres sumas hechas por un hijo</h2>
+  <div data-free="rf3"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Debes ver <code>2 + 3 = 5</code>, <code>10 + 20 = 30</code>, <code>7 + 8 = 15</code> y <code>Total: 50</code>. Después, ve al ejercicio 7 del boletín (la calculadora): es esto mismo, pero leyendo también <code>errorReader()</code>.</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r3"></div>
+</section>
+
+<section data-block="r4" hidden>
+  <div class="eyebrow">Ruta · Nivel 4</div>
+  <h1>Habla con el hijo</h1>
+  <p class="lead">Objetivo: ahora es al revés. El padre <b>escribe</b> en la entrada del hijo como si fuera el teclado, y el hijo lo lee con un <code>Scanner</code>.</p>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>Scanner sc = new Scanner(System.in)</code></td><td>Lee del teclado… o de lo que le mande el padre. El hijo no sabe la diferencia.</td></tr>
+    <tr><td><code>sc.hasNextLine()</code></td><td>¿Queda otra línea? Espera hasta que llegue una. Da <code>false</code> cuando la entrada se <b>cierra</b>.</td></tr>
+    <tr><td><code>sc.nextLine()</code> · <code>linea.toUpperCase()</code></td><td>Lee la línea · la pasa a mayúsculas.</td></tr>
+    <tr><td><code>BufferedWriter w = p.outputWriter()</code></td><td>Un escritor conectado a la entrada del hijo.</td></tr>
+    <tr><td><code>w.write("hola"); w.newLine();</code></td><td>Escribe el texto y un salto de línea. Sin el salto, el hijo no sabe que la línea ha terminado.</td></tr>
+    <tr><td>Cerrar <code>w</code> (fin del <code>try</code>)</td><td>Es decirle al hijo "ya no hay más". Su <code>hasNextLine()</code> da <code>false</code> y su bucle termina.</td></tr>
+    <tr><td><code>new StringBuilder(s).reverse()</code></td><td>Le da la vuelta a un texto: <code>"hilo"</code> → <code>"olih"</code>.</td></tr>
+    <tr><td><code>pb.redirectError(ProcessBuilder.Redirect.INHERIT)</code></td><td>Solo los errores del hijo van a tu consola. Su salida normal la sigues leyendo tú.</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> El hijo grita lo que le dices</h2>
+  <pre class="code" data-src="r4hijo"></pre>
+  <pre class="code" data-src="r4padre"></pre>
+  <pre class="code out">El hijo dice: HOLA
+El hijo dice: QUE TAL</pre>
+
+  <h2><span class="tag">Ordenar</span> Ordena el hijo</h2>
+  <div data-pars="p4"></div>
+  <h2><span class="tag">Huecos</span> Escribir al hijo</h2>
+  <div data-gaps="rg4"></div>
+  <h2><span class="tag">Fallo</span> El programa se queda colgado</h2>
+  <div data-bug="rb4"></div>
+  <h2><span class="tag">Jefe</span> El hijo que lo dice todo al revés</h2>
+  <div data-free="rf4"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Debes ver <code>radar</code>, <code>olih</code>, <code>osecorp</code>, después <code>He invertido 3 palabras</code> (llega por la salida de errores) y <code>Código: 0</code>. El ejercicio 8 del boletín es esto con un fichero.</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r4"></div>
+</section>
+
+<section data-block="r5" hidden>
+  <div class="eyebrow">Ruta · Nivel 5</div>
+  <h1>Muchos hijos a la vez</h1>
+  <p class="lead">Objetivo: lanzar varios hijos que trabajen en paralelo. El truco es usar <b>dos bucles</b>: en el primero los arrancas todos y en el segundo esperas a todos. Este patrón vuelve a salir igual con los hilos.</p>
+  <pre class="code out">Un bucle (start + waitFor)       Dos bucles (start… y luego waitFor…)
+hijo 1  ███                       hijo 1  ███
+hijo 2     ██████                 hijo 2  ██████
+hijo 3           █████████        hijo 3  █████████
+        total: 6 s                        total: 3 s  (lo que tarda el más lento)</pre>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>List&lt;Process&gt; hijos = new ArrayList&lt;&gt;();</code></td><td>Una lista que va creciendo. Entre <code>&lt;&gt;</code> va qué guarda: aquí, objetos <code>Process</code>.</td></tr>
+    <tr><td><code>hijos.add(pb.start());</code></td><td>Arranca el hijo y lo mete en la lista para esperarlo después.</td></tr>
+    <tr><td><code>for (Process p : hijos) { p.waitFor(); }</code></td><td>Recorre la lista y espera a cada uno.</td></tr>
+    <tr><td><code>System.currentTimeMillis()</code></td><td>La hora en milisegundos. Restando dos, sabes cuánto ha pasado.</td></tr>
+    <tr><td><code>Thread.sleep(500)</code></td><td>El programa se duerme medio segundo.</td></tr>
+    <tr><td><code>ProcessHandle.current().children().count()</code></td><td>Cuántos hijos tuyos siguen vivos ahora mismo.</td></tr>
+    <tr><td><code>ThreadLocalRandom.current().nextInt(1000, 3001)</code></td><td>Un número al azar entre 1000 y 3000 (el 3001 no entra).</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> Tres dormilones a la vez</h2>
+  <pre class="code" data-src="r5hijo"></pre>
+  <pre class="code" data-src="r5padre"></pre>
+  <pre class="code out">Dormilón: duermo 1 s
+Dormilón: duermo 3 s
+Dormilón: duermo 2 s
+Dormilón: me despierto tras 1 s
+Dormilón: me despierto tras 2 s
+Dormilón: me despierto tras 3 s
+Total: 3130 ms</pre>
+
+  <h2><span class="tag">Ordenar</span> Los dos bucles</h2>
+  <div data-pars="p5"></div>
+  <h2><span class="tag">Huecos</span> La lista de hijos</h2>
+  <div data-gaps="rg5"></div>
+  <h2><span class="tag">Fallo</span> Tarda 6 segundos en vez de 3</h2>
+  <div data-bug="rb5"></div>
+  <h2><span class="tag">Jefe</span> La carrera</h2>
+  <div data-free="rf5"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Verás <code>Corriendo: 3</code>, los tres corredores llegando en orden distinto cada vez y un tiempo total de unos 3 s como mucho. Ahora ya puedes hacer el ejercicio 5 del boletín (un padre y tres hijos).</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r5"></div>
+</section>
+
+<section data-block="r6" hidden>
+  <div class="eyebrow">Ruta · Nivel 6</div>
+  <h1>Vigila y corta</h1>
+  <p class="lead">Objetivo: nunca esperar para siempre a un hijo que puede colgarse. Le das un tiempo máximo y, si no acaba, primero le pides que pare y, si no hace caso, lo matas.</p>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>p.waitFor(3, TimeUnit.SECONDS)</code></td><td>Espera <b>como mucho</b> 3 s. Devuelve un <code>boolean</code>: <code>true</code> si terminó y <code>false</code> si se acabó el tiempo.</td></tr>
+    <tr><td><code>if (!condicion)</code></td><td><code>!</code> es "no": entra si la condición es falsa.</td></tr>
+    <tr><td><code>p.isAlive()</code></td><td><code>true</code> si el hijo sigue en marcha.</td></tr>
+    <tr><td><code>p.destroy()</code></td><td>Le pide que termine por las buenas (señal SIGTERM). Puede cerrar ordenadamente.</td></tr>
+    <tr><td><code>p.destroyForcibly()</code></td><td>Lo mata sin avisar (SIGKILL).</td></tr>
+    <tr><td><code>p.exitValue()</code></td><td>El código de salida, pero <b>solo si ya ha terminado</b>. Si no, lanza una excepción.</td></tr>
+    <tr><td><code>Runtime.getRuntime().addShutdownHook(new Thread(() -&gt; …))</code></td><td>Código que se ejecuta cuando el programa se cierra por las buenas. Con SIGKILL no se ejecuta.</td></tr>
+  </table></div>
+  <div class="note"><b>En Windows</b> no hay señales: <code>destroy()</code> y <code>destroyForcibly()</code> matan directamente, el gancho de cierre no se ejecuta y el código suele ser 1. En Linux y macOS verás 143 con <code>destroy()</code> y 137 con <code>destroyForcibly()</code>.</div>
+
+  <h2><span class="tag">Ejemplo</span> El vigilante</h2>
+  <pre class="code" data-src="r6hijo"></pre>
+  <pre class="code" data-src="r6padre"></pre>
+  <pre class="code out">$ java Vigilante 1                     $ java Vigilante 10
+Dormilón: he dormido 1 s               Tarda demasiado: le pido que pare
+Dormilón: cierre ordenado              Dormilón: cierre ordenado
+Terminó a tiempo con código 0          Código: 143</pre>
+
+  <h2><span class="tag">Ordenar</span> Pedir por las buenas y luego forzar</h2>
+  <div data-pars="p6"></div>
+  <h2><span class="tag">Huecos</span> Esperar con límite</h2>
+  <div data-gaps="rg6"></div>
+  <h2><span class="tag">Fallo</span> IllegalThreadStateException: process hasn't exited</h2>
+  <div data-bug="rb6"></div>
+  <h2><span class="tag">Jefe</span> El cronometrador</h2>
+  <div data-free="rf6"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Con <code>java Cronometrado 2</code> verás un par de "Sigue vivo" y código 0. Con <code>java Cronometrado 9</code> verás cuatro, "Demasiado: lo paro" y el código del hijo muerto. Con esto tienes el ejercicio 10 del boletín. <b>Has terminado los procesos.</b></div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r6"></div>
+</section>
+
+<section data-block="r7" hidden>
+  <div class="eyebrow">Ruta · Nivel 7</div>
+  <h1>Tu primer hilo</h1>
+  <p class="lead">Objetivo: hacer dos cosas a la vez <b>dentro del mismo programa</b>. Un hilo es como un hijo, pero mucho más barato: no hay que arrancar otra JVM y comparte la memoria con el resto del programa.</p>
+
+  <h2><span class="tag">Ya lo sabes</span> Lo que aprendiste con procesos, ahora con hilos</h2>
+  <div class="tbl"><table>
+    <tr><th>Procesos (niveles 1-6)</th><th>Hilos (desde aquí)</th></tr>
+    <tr><td><code>new ProcessBuilder("java", "-cp", cp, "Hijo")</code></td><td><code>new Thread(tarea)</code></td></tr>
+    <tr><td>el hijo es <b>otro programa</b></td><td>la tarea es <b>un trozo de código</b> de tu programa</td></tr>
+    <tr><td><code>pb.start()</code></td><td><code>h.start()</code></td></tr>
+    <tr><td><code>p.waitFor()</code></td><td><code>h.join()</code></td></tr>
+    <tr><td>dos bucles: arrancar todos y esperar a todos</td><td>exactamente igual</td></tr>
+    <tr><td>memoria separada: se comunican por tuberías</td><td>memoria <b>compartida</b>: ven las mismas variables (nivel 9)</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>() -&gt; { … }</code></td><td>Una <b>lambda</b>: un trozo de código guardado en una variable para ejecutarlo más tarde. Los <code>()</code> vacíos dicen que no recibe nada.</td></tr>
+    <tr><td><code>Runnable tarea = () -&gt; { … };</code></td><td>Un <code>Runnable</code> es "algo que se puede ejecutar". El hilo ejecutará ese código.</td></tr>
+    <tr><td><code>Thread h = new Thread(tarea);</code></td><td>Crea el hilo, todavía parado (estado NEW).</td></tr>
+    <tr><td><code>h.start()</code></td><td>Arranca el hilo: su código empieza a ejecutarse <b>a la vez</b> que el <code>main</code>.</td></tr>
+    <tr><td><code>h.run()</code> ✗</td><td>¡Trampa! Ejecuta el código en el propio <code>main</code>, como un método normal. No crea ningún hilo.</td></tr>
+    <tr><td><code>h.join()</code></td><td>El <code>main</code> espera a que el hilo termine.</td></tr>
+    <tr><td><code>try { Thread.sleep(300); } catch (InterruptedException e) { … }</code></td><td>Dentro de una lambda <b>no</b> vale <code>throws</code>: el <code>sleep</code> tiene que ir en su propio <code>try</code>/<code>catch</code>.</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> El main y un hilo</h2>
+  <pre class="code" data-src="r7ex"></pre>
+  <pre class="code out">Main: he lanzado el hilo
+Hilo: vuelta 1
+Hilo: vuelta 2
+Hilo: vuelta 3
+Main: el hilo ha terminado</pre>
+
+  <h2><span class="tag">Ordenar</span> Ordena el programa</h2>
+  <div data-pars="p7"></div>
+  <h2><span class="tag">Huecos</span> Un hilo con pausas</h2>
+  <div data-gaps="rg7"></div>
+  <h2><span class="tag">Fallo</span> Sale todo seguido en vez de alternado</h2>
+  <div data-bug="rb7"></div>
+  <h2><span class="tag">Jefe</span> Ping-pong</h2>
+  <div data-free="rf7"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Debes ver <code>ping</code> y <code>pong</code> alternándose (a veces se cuelan dos seguidos: es normal) y <code>Fin</code> al final. Cambia los <code>start()</code> por <code>run()</code> y fíjate en la diferencia.</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r7"></div>
+</section>
+
+<section data-block="r8" hidden>
+  <div class="eyebrow">Ruta · Nivel 8</div>
+  <h1>Muchos hilos, y tu Cocina arreglada</h1>
+  <p class="lead">Objetivo: crear N hilos con un array, darle a cada uno su número y controlar cuándo empiezan y acaban. Aquí arreglamos los dos fallos de tu <code>Cocina.java</code>.</p>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>Thread[] cocineros = new Thread[n];</code></td><td>Un array con hueco para <code>n</code> hilos (al principio vacío).</td></tr>
+    <tr><td><code>int id = i + 1;</code></td><td>Una <b>copia</b> de <code>i</code>. Una lambda solo puede usar variables que <b>no cambian</b> después ("effectively final"). <code>i</code> cambia en cada vuelta, pero <code>id</code> no. Si usas <code>i</code> dentro, no compila.</td></tr>
+    <tr><td><code>new Thread(tarea, "Dormilon")</code></td><td>Crea el hilo con un nombre. Lo lees con <code>getName()</code>.</td></tr>
+    <tr><td><code>h.interrupt()</code></td><td>Despierta a un hilo que duerme: su <code>sleep</code> lanza <code>InterruptedException</code> y entra en el <code>catch</code>.</td></tr>
+    <tr><td><code>h.getState()</code></td><td>Su estado: NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING o TERMINATED.</td></tr>
+    <tr><td><code>10_000</code></td><td>Es 10000. Los guiones bajos solo ayudan a leer el número.</td></tr>
+    <tr><td><code>return;</code> dentro de la lambda</td><td>Termina la tarea del hilo, y con ello el hilo.</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> Tres cocineros a la vez</h2>
+  <pre class="code" data-src="r8ex"></pre>
+  <pre class="code out">Cocinero 1 prepara el plato 1
+Cocinero 3 prepara el plato 1
+Cocinero 2 prepara el plato 1
+Cocinero 2 prepara el plato 2
+…
+Todos los platos listos</pre>
+  <h3>Despertar a un hilo con <code>interrupt()</code></h3>
+  <pre class="code" data-src="r8int"></pre>
+  <pre class="code out">Me duermo 10 s
+¡Me han despertado!
+Dormilon está TERMINATED</pre>
+
+  <h2><span class="tag">Ordenar</span> Crear, arrancar, esperar</h2>
+  <div data-pars="p8"></div>
+  <h2><span class="tag">Huecos</span> El hilo que despierta</h2>
+  <div data-gaps="rg8"></div>
+  <h2><span class="tag">Fallo</span> Basado en tu <code>Cocina.java</code></h2>
+  <div data-bug="rb8"></div>
+  <h2><span class="tag">Jefe</span> Escribe la Cocina desde cero</h2>
+  <div data-free="rf8"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Debe tardar unos 0,6 s (3 platos × 200 ms), no 1,8 s. Si tarda 1,8 s, tienes el <code>join()</code> dentro del primer bucle. Arregla también tu <code>Cocina.java</code> de la carpeta <code>TEMA 2</code>.</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r8"></div>
+</section>
+
+<section data-block="r9" hidden>
+  <div class="eyebrow">Ruta · Nivel 9 · Clase del 4 de noviembre</div>
+  <h1>Datos compartidos sin romperlos</h1>
+  <p class="lead">Objetivo: los hilos comparten variables, y eso es peligroso. Si dos hilos cambian la misma variable a la vez, se pierden cambios: es una <b>condición de carrera</b>. Se arregla dejando entrar de uno en uno a la <b>sección crítica</b>.</p>
+
+  <h2><span class="tag">Teoría</span> Por qué <code>contador++</code> falla</h2>
+  <p><code>contador++</code> parece una sola cosa, pero son <b>tres pasos</b>: leer el valor, sumarle 1 y escribirlo. Si el planificador cambia de hilo en medio, pasa esto:</p>
+  <div class="tbl"><table>
+    <tr><th>Hilo A</th><th>Hilo B</th><th>contador</th></tr>
+    <tr><td>lee 5</td><td></td><td>5</td></tr>
+    <tr><td></td><td>lee 5</td><td>5</td></tr>
+    <tr><td>suma: 6 · escribe 6</td><td></td><td>6</td></tr>
+    <tr><td></td><td>suma: 6 · escribe 6</td><td><b>6</b> (debería ser 7)</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>static int contador = 0;</code></td><td>Una variable de la clase, la misma para todos los hilos.</td></tr>
+    <tr><td><code>static synchronized void sumarUno()</code></td><td>Solo <b>un hilo a la vez</b> puede estar dentro. Los demás esperan en la puerta (estado BLOCKED).</td></tr>
+    <tr><td><code>synchronized (objeto) { … }</code></td><td>Lo mismo, pero solo para un bloque de código, usando <code>objeto</code> como candado.</td></tr>
+    <tr><td><code>AtomicInteger c = new AtomicInteger(0);</code></td><td>Un entero que se suma de forma segura sin <code>synchronized</code>: <code>c.incrementAndGet()</code> y <code>c.get()</code>.</td></tr>
+    <tr><td><code>volatile</code></td><td>Hace que todos los hilos vean el último valor, pero <b>no</b> hace atómico <code>contador++</code>. No arregla la carrera.</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> Dos hilos sumando 100 000 cada uno</h2>
+  <pre class="code" data-src="r9mal"></pre>
+  <pre class="code out">Contador: 150139 (debería ser 200000)     ← cada vez sale un número distinto
+Contador: 135474 (debería ser 200000)</pre>
+  <p>Arreglado con <code>synchronized</code>, siempre da 200000:</p>
+  <pre class="code" data-src="r9bien"></pre>
+
+  <h2><span class="tag">Ordenar</span> La versión arreglada</h2>
+  <div data-pars="p9"></div>
+  <h2><span class="tag">Huecos</span> Con <code>AtomicInteger</code></h2>
+  <div data-gaps="rg9"></div>
+  <h2><span class="tag">Fallo</span> Se venden más entradas de las que hay</h2>
+  <div data-bug="rb9"></div>
+  <h2><span class="tag">Jefe</span> La taquilla</h2>
+  <div data-free="rf9"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> El total tiene que ser <b>siempre 1000</b> y <code>quedan 0</code>. El reparto entre vendedores cambia y puede ser muy desigual (uno vende casi todas): es normal, porque el que arranca primero se adelanta. Quita el <code>synchronized</code>, pon 100000 entradas y verás que se venden más de las que hay.</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r9"></div>
+</section>
+
+<section data-block="r10" hidden>
+  <div class="eyebrow">Ruta · Nivel 10 · Clase del 11 de noviembre</div>
+  <h1>Productor y consumidor</h1>
+  <p class="lead">Objetivo: que dos hilos se <b>coordinen</b>. Un horno pone panes en un mostrador con 3 huecos y un cliente los coge. Si el mostrador está lleno, el horno espera. Si está vacío, espera el cliente.</p>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>wait()</code></td><td>"Me duermo hasta que me avisen", y mientras tanto <b>suelto el candado</b> para que otro pueda entrar. Solo se puede llamar dentro de algo <code>synchronized</code>.</td></tr>
+    <tr><td><code>notifyAll()</code></td><td>Despierta a todos los que están en <code>wait()</code> sobre ese objeto. Cuando se despiertan, vuelven a comprobar su condición.</td></tr>
+    <tr><td><code>while (lleno) wait();</code></td><td>Siempre <b>while</b>, nunca <code>if</code>: al despertar hay que volver a mirar, porque otro hilo puede haberse adelantado.</td></tr>
+    <tr><td><code>Queue&lt;Integer&gt; panes = new LinkedList&lt;&gt;();</code></td><td>Una cola: <code>add</code> mete al final y <code>remove</code> saca del principio. <code>size()</code> e <code>isEmpty()</code> dicen cuántos hay.</td></tr>
+    <tr><td><code>private final</code></td><td>Solo se usa dentro de la clase (<code>private</code>) y no se cambia por otro objeto (<code>final</code>).</td></tr>
+    <tr><td><code>BlockingQueue</code> · <code>put</code> · <code>take</code></td><td>Una cola que ya hace el <code>wait</code>/<code>notifyAll</code> por ti. <code>put</code> espera si está llena y <code>take</code> espera si está vacía.</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> La panadería</h2>
+  <p>El mostrador es el <b>objeto compartido</b>. Toda la sincronización va dentro de él. Los hilos solo llaman a <code>poner</code> y <code>coger</code>.</p>
+  <pre class="code" data-src="r10mostrador"></pre>
+  <pre class="code" data-src="r10main"></pre>
+  <pre class="code out">Horno pone el pan 1   (en el mostrador: 1)
+        Cliente coge el pan 1 (en el mostrador: 0)
+Horno pone el pan 2   (en el mostrador: 1)
+Horno pone el pan 3   (en el mostrador: 2)
+Horno pone el pan 4   (en el mostrador: 3)      ← lleno: el horno espera
+        Cliente coge el pan 2 (en el mostrador: 2)
+Horno pone el pan 5   (en el mostrador: 3)
+…
+Panadería cerrada</pre>
+  <h3>La misma panadería con <code>BlockingQueue</code></h3>
+  <pre class="code" data-src="r10cola"></pre>
+  <div class="note">En el examen pueden pedirte cualquiera de las dos. Si te dejan elegir, <code>BlockingQueue</code> es más corta y más difícil de hacer mal. Pero tienes que entender <code>wait</code>/<code>notifyAll</code>, porque es lo que hay debajo.</div>
+
+  <h2><span class="tag">Ordenar</span> El método coger</h2>
+  <div data-pars="p10"></div>
+  <h2><span class="tag">Huecos</span> El método poner</h2>
+  <div data-gaps="rg10"></div>
+  <h2><span class="tag">Fallo</span> IllegalMonitorStateException</h2>
+  <div data-bug="rb10"></div>
+  <h2><span class="tag">Jefe</span> El buzón de una sola carta</h2>
+  <div data-free="rf10"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Debes ver <code>Vecino lee: hola</code>, <code>que tal</code> y <code>adios</code>, y el programa tiene que <b>terminar solo</b>. Si se queda colgado, te falta un <code>notifyAll()</code> o el mensaje <code>"FIN"</code>.</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r10"></div>
+</section>
+
+<section data-block="r11" hidden>
+  <div class="eyebrow">Ruta · Nivel 11</div>
+  <h1>Semáforos, pools e interbloqueo</h1>
+  <p class="lead">Objetivo: limitar cuántos hilos usan algo a la vez (un parking con 3 plazas), reutilizar hilos con un pool y reconocer cuándo dos hilos se bloquean para siempre.</p>
+
+  <h2><span class="tag">Java</span> Lo que necesitas</h2>
+  <div class="tbl"><table>
+    <tr><th>Esto</th><th>Significa</th></tr>
+    <tr><td><code>Semaphore plazas = new Semaphore(3);</code></td><td>Un contador de permisos: 3 plazas libres.</td></tr>
+    <tr><td><code>plazas.acquire()</code></td><td>Coge un permiso. Si no queda ninguno, el hilo <b>espera</b> a que alguien devuelva uno.</td></tr>
+    <tr><td><code>plazas.release()</code></td><td>Devuelve el permiso. Va en un <code>finally</code> para que se devuelva <b>siempre</b>, aunque haya un error.</td></tr>
+    <tr><td><code>try { … } finally { … }</code></td><td>Lo del <code>finally</code> se ejecuta pase lo que pase en el <code>try</code>.</td></tr>
+    <tr><td><code>ExecutorService pool = Executors.newFixedThreadPool(2);</code></td><td>Un grupo de 2 hilos que van haciendo las tareas que le mandes, una detrás de otra.</td></tr>
+    <tr><td><code>pool.submit(() -&gt; { … })</code></td><td>Manda una tarea al pool. No hace falta crear el <code>Thread</code>.</td></tr>
+    <tr><td><code>pool.shutdown()</code> · <code>pool.awaitTermination(1, TimeUnit.MINUTES)</code></td><td>"No aceptes más tareas" · espera a que terminen las que hay (como un <code>join</code>).</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Ejemplo</span> Un parking de 3 plazas y 6 coches</h2>
+  <pre class="code" data-src="r11parking"></pre>
+  <pre class="code out">Coche 2 aparca   (libres: 1)
+Coche 1 aparca   (libres: 2)
+Coche 4 aparca   (libres: 0)      ← nunca hay más de 3 dentro
+Coche 2 se va
+Coche 6 aparca   (libres: 1)
+…
+Parking vacío</pre>
+  <h3>Un pool de 2 hilos para 5 tareas</h3>
+  <pre class="code" data-src="r11pool"></pre>
+  <pre class="code out">Tarea 1 en pool-1-thread-1
+Tarea 2 en pool-1-thread-2
+Tarea 3 en pool-1-thread-1      ← los mismos 2 hilos se reutilizan
+…
+Todas las tareas hechas</pre>
+
+  <h2><span class="tag">Teoría</span> Interbloqueo e inanición</h2>
+  <p><b>Interbloqueo</b> (<i>deadlock</i>): A tiene el tenedor 1 y espera el 2; B tiene el 2 y espera el 1. Ninguno suelta el suyo, así que esperan para siempre. Este programa se queda colgado:</p>
+  <pre class="code" data-src="r11dead"></pre>
+  <div class="grid">
+    <div class="cell"><b>Exclusión mutua</b><span>Cada tenedor solo lo puede tener uno.</span></div>
+    <div class="cell"><b>Retención y espera</b><span>Tengo uno y espero el otro sin soltar el mío.</span></div>
+    <div class="cell"><b>Sin expropiación</b><span>Nadie te puede quitar el tenedor.</span></div>
+    <div class="cell"><b>Espera circular</b><span>A espera a B y B espera a A.</span></div>
+  </div>
+  <p>Hacen falta <b>las cuatro</b> condiciones a la vez. La solución más fácil es romper la espera circular: <b>todos cogen los candados en el mismo orden</b> (primero el 1 y después el 2). <b>Inanición</b> es distinto: el programa avanza, pero un hilo concreto nunca consigue el recurso porque siempre se le adelantan.</p>
+
+  <h2><span class="tag">Ordenar</span> El pool</h2>
+  <div data-pars="p11"></div>
+  <h2><span class="tag">Huecos</span> Entrar y salir del parking</h2>
+  <div data-gaps="rg11"></div>
+  <h2><span class="tag">Fallo</span> Entran los 6 coches a la vez</h2>
+  <div data-bug="rb11"></div>
+  <h2><span class="tag">Jefe</span> Dos fotocopiadoras para cinco alumnos</h2>
+  <div data-free="rf11"></div>
+  <div class="pc"><b>Pruébalo en tu PC.</b> Nunca debe haber más de dos alumnos fotocopiando a la vez (mira que entre dos "fotocopia" haya un "deja la máquina"). Debe tardar unos 1,5 s y acabar con <code>Todos tienen sus apuntes</code>.</div>
+  <h2><span class="tag">Test</span> Comprueba que lo has entendido</h2>
+  <div data-quiz="r11"></div>
+</section>
+
+<section data-block="r12" hidden>
+  <div class="eyebrow">Ruta · Final</div>
+  <h1>Simulacro de examen</h1>
+  <p class="lead">Si has llegado aquí, ya has escrito todos los tipos de programa que entran en la primera evaluación. Lo que queda es poder escribirlos <b>sin mirar</b>.</p>
+
+  <h2><span class="tag">Boletín</span> Qué nivel te prepara para cada ejercicio del Tema 1</h2>
+  <div class="tbl"><table>
+    <tr><th>Ejercicio del boletín de tu profesor</th><th>Repasa</th></tr>
+    <tr><td>5 · Un padre y tres hijos</td><td>Nivel 5 (dos bucles, <code>children()</code>)</td></tr>
+    <tr><td>6 · Lanzador con cronómetro</td><td>Niveles 1 y 2 (lanzar, <code>System.exit</code> con el mismo código)</td></tr>
+    <tr><td>7 · Calculadora en un proceso hijo</td><td>Nivel 3 (<code>inputReader</code> y <code>errorReader</code>)</td></tr>
+    <tr><td>8 · Filtro de mayúsculas</td><td>Nivel 4 (y <code>redirectInput</code>/<code>redirectOutput</code> del bloque 6)</td></tr>
+    <tr><td>9 · Calcular π con dardos</td><td>Niveles 5 y 3 a la vez: lanzar todos, leer a todos</td></tr>
+    <tr><td>10 · El vigilante</td><td>Nivel 6</td></tr>
+  </table></div>
+
+  <h2><span class="tag">Sin mirar</span> Marca lo que ya sabes escribir de memoria</h2>
+  <p>Escríbelo en papel o en un fichero vacío y compílalo. Si necesitas mirar, no lo marques todavía.</p>
+  <div id="rchk"></div>
+
+  <h2><span class="tag">Imports</span> Los que más vas a usar</h2>
+  <pre class="code" data-src="imports"></pre>
+  <div class="note ok"><b>Truco para el examen:</b> empieza siempre por la plantilla (<code>class</code> + <code>main</code>) y escribe primero los <b>comentarios</b> de los pasos, como en las plantillas de los jefes. Luego rellena cada paso. Si te bloqueas en uno, sigue con el siguiente.</div>
+
+  <h2><span class="tag">Test</span> Mezcla de todo</h2>
+  <div data-quiz="r12"></div>
+</section>
+
 <!-- =============== BLOQUE 1 =============== -->
-<section data-block="b1">
+<section data-block="b1" hidden>
   <div class="eyebrow">Bloque 1 · Conceptos básicos</div>
   <h1>Programa, proceso, servicio e hilo</h1>
   <p class="lead">Los cuatro conceptos sobre los que se construye todo el módulo. Si entiendes la analogía de la cocina, tienes medio tema hecho.</p>
@@ -1552,7 +2153,7 @@ const PRED={p1:{t:"¿Qué imprimen A, B, C y D?",d:"Elige el estado de cada lín
 const TSTATES=["NEW","RUNNABLE","BLOCKED","WAITING","TIMED_WAITING","TERMINATED"];
 
 /* ---------- estado ---------- */
-let S={quiz:{},gaps:{},free:{},done:{},check:{},pred:{}};
+let S={quiz:{},gaps:{},free:{},done:{},check:{},pred:{},pars:{},bug:{},cal:{},rchk:{}};
 try{const r=localStorage.getItem("psp-t1");if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
 function save(){try{localStorage.setItem("psp-t1",JSON.stringify(S));}catch(e){}updateProgress();}
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -1561,6 +2162,10 @@ const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const nav=document.getElementById("nav");
 function blockState(id){
   if(S.done[id])return"done";
+  if(/^r\d/.test(id)){const p=levelProgress(id);if(p.n&&p.ok===p.n)return"done";
+    const sec=document.querySelector(`main>section[data-block="${id}"]`);
+    const touched=p.ok>0||(QUIZ[id]||[]).some((_,i)=>S.quiz[id+"-"+i]!==undefined)||[...(sec?sec.querySelectorAll("[data-free],[data-pars]"):[])].some(e=>(S.free[e.dataset.free]&&S.free[e.dataset.free].code)||(S.pars[e.dataset.pars]&&S.pars[e.dataset.pars].o&&S.pars[e.dataset.pars].o.length));
+    return touched?"run":"new";}
   const qs=QUIZ[id]||[];const any=qs.some((_,i)=>S.quiz[id+"-"+i]!==undefined);
   return any?"run":"new";
 }
@@ -1573,7 +2178,9 @@ function renderNav(cur){
     const lab={new:"NUEVO",run:"EN CURSO",done:"HECHO"}[st];
     const btn=document.createElement("button");
     btn.setAttribute("aria-current",b.id===cur);
-    btn.innerHTML=`<span class="pid">${b.tema===2?"TID":"PID"} ${b.tema===2?1+(i-7):100+i*7}</span><span>${b.name}</span><span class="state ${st==="run"?"run":st==="done"?"done":""}">${lab}</span>`;
+    const k=BLOCKS.filter(x=>x.tema===b.tema).indexOf(b);
+    const tag=b.tema===0?(b.id==="r0"?"INICIO":b.id==="r12"?"FINAL":"NIV "+k):b.tema===2?"TID "+(k+1):"PID "+(100+k*7);
+    btn.innerHTML=`<span class="pid">${tag}</span><span>${b.name}</span><span class="state ${st==="run"?"run":st==="done"?"done":""}">${lab}</span>`;
     btn.onclick=()=>show(b.id,true);
     nav.appendChild(btn);
     if(b.id===cur&&getComputedStyle(nav).flexDirection==="row")requestAnimationFrame(()=>{nav.scrollLeft=btn.offsetLeft-nav.offsetLeft-90;});
@@ -1774,11 +2381,14 @@ function updateProgress(){
   Object.keys(GAPS).forEach(k=>{total+=2;if(S.gaps[k]&&S.gaps[k].ok)got+=2;});
   Object.keys(FREE).forEach(k=>{total+=2;if(S.free[k]&&S.free[k].ok)got+=2;});
   Object.keys(PRED).forEach(k=>{total+=2;if(S.pred&&S.pred[k]&&S.pred[k].ok)got+=2;});
-  BLOCKS.forEach(b=>{total+=2;if(S.done[b.id])got+=2;});
+  Object.keys(PARS).forEach(k=>{total+=2;if(S.pars&&S.pars[k]&&S.pars[k].ok)got+=2;});
+  Object.keys(BUGS).forEach(k=>{total+=1;if(S.bug&&S.bug[k]&&S.bug[k].ok)got+=1;});
+  BLOCKS.forEach(b=>{total+=2;if(S.done[b.id]||blockState(b.id)==="done")got+=2;});
   const pct=Math.round(got/total*100);
   document.getElementById("pct").textContent=pct+" %";document.getElementById("fill").style.width=pct+"%";
   const nq=Object.values(QUIZ).reduce((a,q)=>a+q.length,0);
   document.getElementById("stats").textContent=`${ok}/${nq} preguntas acertadas`;
+  if(typeof renderMap==="function")renderMap();
 }
 
 /* ---------- tema 2: predecir estados ---------- */
@@ -1851,7 +2461,1792 @@ function initAmd(){
   [P,N,T].forEach(i=>i.addEventListener("input",calc));calc();
 }
 
+/* ================= RUTA PASO A PASO ================= */
+const RUTA_BLOCKS=[
+ {id:"r0",name:"Empieza aquí",tema:0},
+ {id:"r1",name:"Tu primer proceso",tema:0},
+ {id:"r2",name:"Un hijo escrito por ti",tema:0},
+ {id:"r3",name:"Escucha al hijo",tema:0},
+ {id:"r4",name:"Habla con el hijo",tema:0},
+ {id:"r5",name:"Muchos hijos a la vez",tema:0},
+ {id:"r6",name:"Vigila y corta",tema:0},
+ {id:"r7",name:"Tu primer hilo",tema:0},
+ {id:"r8",name:"Muchos hilos",tema:0},
+ {id:"r9",name:"Datos compartidos",tema:0},
+ {id:"r10",name:"Productor y consumidor",tema:0},
+ {id:"r11",name:"Semáforos e interbloqueo",tema:0},
+ {id:"r12",name:"Simulacro de examen",tema:0}];
+BLOCKS.unshift(...RUTA_BLOCKS);
+TEMAS[0]="Ruta paso a paso";
+
+/* ---------- código de los ejemplos (todo compilado y ejecutado con JDK 21) ---------- */
+const CODE={
+plantilla:`public class Nombre {                                // se guarda como Nombre.java
+    public static void main(String[] args) throws Exception {
+        // tu código aquí
+    }
+}`,
+imports:`import java.io.BufferedReader;            // leer lo que escribe el hijo
+import java.io.BufferedWriter;            // escribir al hijo
+import java.io.IOException;
+import java.util.ArrayList;               // listas de procesos o hilos
+import java.util.List;
+import java.util.Scanner;                 // leer System.in en el hijo
+import java.util.concurrent.TimeUnit;     // waitFor(3, TimeUnit.SECONDS)
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;`,
+r1ex:`import java.io.IOException;                       // hace falta para el catch
+
+public class PrimerProceso {
+    public static void main(String[] args) {
+        try {
+            // 1. Guardo la orden: el programa y cada argumento por separado
+            ProcessBuilder pb = new ProcessBuilder("java", "-version");
+            // 2. Que lo que escriba el hijo salga en mi consola
+            pb.inheritIO();
+            // 3. Lo lanzo: aquí nace el proceso hijo
+            Process p = pb.start();
+            System.out.println("He lanzado un hijo con PID " + p.pid());
+            // 4. Espero a que acabe y guardo su código de salida
+            int codigo = p.waitFor();
+            System.out.println("El hijo ha terminado con código " + codigo);
+        } catch (IOException e) {
+            // start() falla si el programa no existe o no tiene permisos
+            System.out.println("No he podido lanzarlo: " + e.getMessage());
+        } catch (InterruptedException e) {
+            // waitFor() falla si alguien interrumpe al padre mientras espera
+            System.out.println("Me han interrumpido mientras esperaba");
+        }
+    }
+}`,
+r2hijo:`// Fichero Par.java  (el HIJO)
+public class Par {
+    public static void main(String[] args) {
+        int n = Integer.parseInt(args[0]);          // "7" → 7
+        System.out.println("Hijo: me han pasado el " + n);
+        if (n % 2 == 0) {
+            System.exit(0);                         // 0 = par
+        } else {
+            System.exit(1);                         // 1 = impar
+        }
+    }
+}`,
+r2padre:`// Fichero PadrePar.java  (el PADRE)
+public class PadrePar {
+    public static void main(String[] args) throws Exception {
+        // Dónde están mis .class, para que el hijo encuentre Par.class
+        String cp = System.getProperty("java.class.path");
+        // Es como escribir en la terminal:  java -cp . Par 7
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Par", "7");
+        pb.inheritIO();
+        Process p = pb.start();
+        int codigo = p.waitFor();                   // lo que el hijo puso en System.exit
+        if (codigo == 0) {
+            System.out.println("Padre: es par");
+        } else {
+            System.out.println("Padre: es impar");
+        }
+    }
+}`,
+r3hijo:`// Fichero Tabla.java  (el HIJO): solo escribe con println
+public class Tabla {
+    public static void main(String[] args) {
+        int n = Integer.parseInt(args[0]);
+        for (int i = 1; i <= 3; i++) {
+            System.out.println(n + " x " + i + " = " + (n * i));
+        }
+    }
+}`,
+r3padre:`// Fichero PadreTabla.java  (el PADRE): lee lo que escribe el hijo
+import java.io.BufferedReader;
+
+public class PadreTabla {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Tabla", "7");
+        // ¡Sin inheritIO! Queremos la salida en la tubería, no en la consola
+        Process p = pb.start();
+        try (BufferedReader br = p.inputReader()) {
+            String linea;
+            // Lee línea a línea hasta que el hijo deja de escribir (null)
+            while ((linea = br.readLine()) != null) {
+                System.out.println("[hijo] " + linea);
+            }
+        }
+        // Esperar DESPUÉS de leer
+        System.out.println("Código: " + p.waitFor());
+    }
+}`,
+r4hijo:`// Fichero Mayus.java  (el HIJO): lee líneas hasta que se cierre la entrada
+import java.util.Scanner;
+
+public class Mayus {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        while (sc.hasNextLine()) {                  // false cuando el padre cierra
+            String linea = sc.nextLine();
+            System.out.println(linea.toUpperCase());
+        }
+    }
+}`,
+r4padre:`// Fichero PadreMayus.java  (el PADRE): escribe, cierra y luego lee
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+
+public class PadreMayus {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        Process p = new ProcessBuilder("java", "-cp", cp, "Mayus").start();
+
+        // 1. Escribo al hijo como si fuera su teclado
+        try (BufferedWriter w = p.outputWriter()) {
+            w.write("hola");
+            w.newLine();
+            w.write("que tal");
+            w.newLine();
+        }   // 2. Al salir del try se cierra w: el hijo sabe que no hay más
+
+        // 3. Leo lo que me contesta
+        try (BufferedReader br = p.inputReader()) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                System.out.println("El hijo dice: " + linea);
+            }
+        }
+        p.waitFor();
+    }
+}`,
+r5hijo:`// Fichero Dormilon.java  (el HIJO)
+public class Dormilon {
+    public static void main(String[] args) throws InterruptedException {
+        int segundos = Integer.parseInt(args[0]);
+        System.out.println("Dormilón: duermo " + segundos + " s");
+        Thread.sleep(segundos * 1000L);             // 1000L: milisegundos como long
+        System.out.println("Dormilón: me despierto tras " + segundos + " s");
+    }
+}`,
+r5padre:`// Fichero TresALaVez.java  (el PADRE)
+import java.util.ArrayList;
+import java.util.List;
+
+public class TresALaVez {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        long inicio = System.currentTimeMillis();
+        List<Process> hijos = new ArrayList<>();
+
+        // Bucle 1: arranco TODOS sin esperar a ninguno
+        for (int s = 1; s <= 3; s++) {
+            ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Dormilon", String.valueOf(s));
+            pb.inheritIO();
+            hijos.add(pb.start());
+        }
+
+        // Bucle 2: ahora sí, espero a TODOS
+        for (Process p : hijos) {
+            p.waitFor();
+        }
+
+        long ms = System.currentTimeMillis() - inicio;
+        System.out.println("Total: " + ms + " ms");     // unos 3000, no 6000
+    }
+}`,
+r6hijo:`// Fichero Dormilon.java  (el HIJO), ahora con gancho de cierre
+public class Dormilon {
+    public static void main(String[] args) throws InterruptedException {
+        // Esto se ejecuta si me cierran por las buenas (destroy en Linux/Mac)
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("Dormilón: cierre ordenado")));
+        int segundos = Integer.parseInt(args[0]);
+        Thread.sleep(segundos * 1000L);
+        System.out.println("Dormilón: he dormido " + segundos + " s");
+    }
+}`,
+r6padre:`// Fichero Vigilante.java  (el PADRE)
+import java.util.concurrent.TimeUnit;
+
+public class Vigilante {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Dormilon", args[0]);
+        pb.inheritIO();
+        Process p = pb.start();
+
+        if (p.waitFor(3, TimeUnit.SECONDS)) {               // ¿terminó en 3 s?
+            System.out.println("Terminó a tiempo con código " + p.exitValue());
+        } else {
+            System.out.println("Tarda demasiado: le pido que pare");
+            p.destroy();                                    // por las buenas
+            if (!p.waitFor(2, TimeUnit.SECONDS)) {          // le doy 2 s
+                p.destroyForcibly();                        // por las malas
+            }
+            System.out.println("Código: " + p.waitFor());
+        }
+    }
+}`,
+r7ex:`public class PrimerHilo {
+    public static void main(String[] args) throws InterruptedException {
+        // 1. La tarea: el código que hará el hilo (una lambda)
+        Runnable tarea = () -> {
+            for (int i = 1; i <= 3; i++) {
+                System.out.println("Hilo: vuelta " + i);
+            }
+        };
+        // 2. Creo el hilo con esa tarea (todavía no hace nada: NEW)
+        Thread h = new Thread(tarea);
+        // 3. Lo arranco: a partir de aquí van el main y el hilo a la vez
+        h.start();
+        System.out.println("Main: he lanzado el hilo");
+        // 4. El main espera a que el hilo acabe (como waitFor)
+        h.join();
+        System.out.println("Main: el hilo ha terminado");
+    }
+}`,
+r8ex:`public class Cocina {
+    public static void main(String[] args) throws InterruptedException {
+        int n = 3;
+        Thread[] cocineros = new Thread[n];
+
+        // Bucle 1: CREAR los hilos (todavía no arrancan)
+        for (int i = 0; i < n; i++) {
+            int id = i + 1;                        // copia fija de i para la lambda
+            cocineros[i] = new Thread(() -> {
+                for (int plato = 1; plato <= 3; plato++) {
+                    System.out.println("Cocinero " + id + " prepara el plato " + plato);
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        return;                    // si me interrumpen, dejo de cocinar
+                    }
+                }
+            });
+        }
+
+        // Bucle 2: ARRANCAR todos (una sola vez cada uno)
+        for (Thread c : cocineros) {
+            c.start();
+        }
+        // Bucle 3: ESPERAR a todos
+        for (Thread c : cocineros) {
+            c.join();
+        }
+        System.out.println("Todos los platos listos");
+    }
+}`,
+r8int:`public class Despertador {
+    public static void main(String[] args) throws InterruptedException {
+        Thread dormilon = new Thread(() -> {
+            try {
+                System.out.println("Me duermo 10 s");
+                Thread.sleep(10_000);
+                System.out.println("He dormido entero");      // no llega a salir
+            } catch (InterruptedException e) {
+                System.out.println("¡Me han despertado!");
+            }
+        }, "Dormilon");
+        dormilon.start();
+        Thread.sleep(1000);              // el main espera 1 s…
+        dormilon.interrupt();            // …y despierta al dormilón
+        dormilon.join();
+        System.out.println(dormilon.getName() + " está " + dormilon.getState());
+    }
+}`,
+r9mal:`public class Carrera {
+    static int contador = 0;                       // compartido por los dos hilos
+
+    public static void main(String[] args) throws InterruptedException {
+        Runnable sumar = () -> {
+            for (int i = 0; i < 100_000; i++) {
+                contador++;                        // leer, sumar, escribir: ¡3 pasos!
+            }
+        };
+        Thread a = new Thread(sumar);
+        Thread b = new Thread(sumar);
+        a.start();
+        b.start();
+        a.join();
+        b.join();
+        System.out.println("Contador: " + contador + " (debería ser 200000)");
+    }
+}`,
+r9bien:`public class CarreraArreglada {
+    static int contador = 0;
+
+    // Sección crítica: solo un hilo a la vez puede estar aquí dentro
+    static synchronized void sumarUno() {
+        contador++;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Runnable sumar = () -> {
+            for (int i = 0; i < 100_000; i++) {
+                sumarUno();
+            }
+        };
+        Thread a = new Thread(sumar);
+        Thread b = new Thread(sumar);
+        a.start();
+        b.start();
+        a.join();
+        b.join();
+        System.out.println("Contador: " + contador);   // siempre 200000
+    }
+}`,
+r10mostrador:`// Fichero Mostrador.java: el objeto COMPARTIDO entre horno y cliente
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Mostrador {
+    private final Queue<Integer> panes = new LinkedList<>();
+    private final int capacidad = 3;
+
+    public synchronized void poner(int pan) throws InterruptedException {
+        while (panes.size() == capacidad) {   // lleno: el horno espera
+            wait();
+        }
+        panes.add(pan);
+        System.out.println("Horno pone el pan " + pan + "   (en el mostrador: " + panes.size() + ")");
+        notifyAll();                           // aviso: ya hay pan
+    }
+
+    public synchronized int coger() throws InterruptedException {
+        while (panes.isEmpty()) {              // vacío: el cliente espera
+            wait();
+        }
+        int pan = panes.remove();
+        System.out.println("        Cliente coge el pan " + pan + " (en el mostrador: " + panes.size() + ")");
+        notifyAll();                           // aviso: ya hay hueco
+        return pan;
+    }
+}`,
+r10main:`// Fichero Panaderia.java: un hilo productor y uno consumidor
+public class Panaderia {
+    public static void main(String[] args) throws InterruptedException {
+        Mostrador m = new Mostrador();         // UN mostrador para los dos
+
+        Thread horno = new Thread(() -> {
+            try {
+                for (int i = 1; i <= 6; i++) {
+                    m.poner(i);
+                    Thread.sleep(100);         // el horno es rápido
+                }
+            } catch (InterruptedException e) {
+                return;
+            }
+        });
+
+        Thread cliente = new Thread(() -> {
+            try {
+                for (int i = 1; i <= 6; i++) {
+                    m.coger();
+                    Thread.sleep(400);         // el cliente es lento
+                }
+            } catch (InterruptedException e) {
+                return;
+            }
+        });
+
+        horno.start();
+        cliente.start();
+        horno.join();
+        cliente.join();
+        System.out.println("Panadería cerrada");
+    }
+}`,
+r10cola:`import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
+public class PanaderiaCola {
+    public static void main(String[] args) throws InterruptedException {
+        BlockingQueue<Integer> mostrador = new ArrayBlockingQueue<>(3);   // 3 huecos
+
+        Thread horno = new Thread(() -> {
+            try {
+                for (int i = 1; i <= 6; i++) {
+                    mostrador.put(i);          // si está lleno, espera solo
+                    System.out.println("Horno pone el pan " + i);
+                }
+            } catch (InterruptedException e) {
+                return;
+            }
+        });
+        Thread cliente = new Thread(() -> {
+            try {
+                for (int i = 1; i <= 6; i++) {
+                    int pan = mostrador.take(); // si está vacío, espera solo
+                    System.out.println("        Cliente coge el pan " + pan);
+                    Thread.sleep(400);
+                }
+            } catch (InterruptedException e) {
+                return;
+            }
+        });
+        horno.start();
+        cliente.start();
+        horno.join();
+        cliente.join();
+    }
+}`,
+r11parking:`import java.util.concurrent.Semaphore;
+
+public class Parking {
+    static Semaphore plazas = new Semaphore(3);      // UNO para todos los coches
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread[] coches = new Thread[6];
+        for (int i = 0; i < 6; i++) {
+            int id = i + 1;
+            coches[i] = new Thread(() -> {
+                try {
+                    plazas.acquire();                // coge plaza (o espera)
+                    try {
+                        System.out.println("Coche " + id + " aparca   (libres: " + plazas.availablePermits() + ")");
+                        Thread.sleep(1000);
+                    } finally {
+                        System.out.println("Coche " + id + " se va");
+                        plazas.release();            // devuelve la plaza SIEMPRE
+                    }
+                } catch (InterruptedException e) {
+                    return;
+                }
+            });
+        }
+        for (Thread c : coches) c.start();
+        for (Thread c : coches) c.join();
+        System.out.println("Parking vacío");
+    }
+}`,
+r11pool:`import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class Pool {
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService pool = Executors.newFixedThreadPool(2);   // 2 hilos
+        for (int i = 1; i <= 5; i++) {
+            int id = i;
+            pool.submit(() -> {                                      // 5 tareas
+                System.out.println("Tarea " + id + " en " + Thread.currentThread().getName());
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            });
+        }
+        pool.shutdown();                                  // no admite más tareas
+        pool.awaitTermination(1, TimeUnit.MINUTES);       // espera a que acaben
+        System.out.println("Todas las tareas hechas");
+    }
+}`,
+r11dead:`public class Interbloqueo {
+    static final Object tenedor1 = new Object();
+    static final Object tenedor2 = new Object();
+
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (tenedor1) {              // A coge el 1…
+                dormir();
+                synchronized (tenedor2) {          // …y espera el 2
+                    System.out.println("A come");
+                }
+            }
+        }).start();
+        new Thread(() -> {
+            synchronized (tenedor2) {              // B coge el 2…
+                dormir();
+                synchronized (tenedor1) {          // …y espera el 1: ¡bloqueo!
+                    System.out.println("B come");
+                }
+            }
+        }).start();
+    }
+
+    static void dormir() {
+        try { Thread.sleep(100); } catch (InterruptedException e) { }
+    }
+}`};
+
+/* ---------- ordenar líneas ---------- */
+const PARS={
+p1:{t:"Lanzar java -version y mostrar el código",d:"Pulsa las piezas en el orden correcto para montar el programa. Si te equivocas, pulsa una línea de tu programa para devolverla.",lines:[
+"public class Lanzar {",
+"    public static void main(String[] args) throws Exception {",
+"        ProcessBuilder pb = new ProcessBuilder(\"java\", \"-version\");",
+"        pb.inheritIO();",
+"        Process p = pb.start();",
+"        int codigo = p.waitFor();",
+"        System.out.println(\"Código: \" + codigo);",
+"    }",
+"}"]},
+p2:{t:"El hijo Par",d:"Primero convierte el argumento, después decide con qué código sale.",lines:[
+"public class Par {",
+"    public static void main(String[] args) {",
+"        int n = Integer.parseInt(args[0]);",
+"        if (n % 2 == 0) {",
+"            System.exit(0);",
+"        } else {",
+"            System.exit(1);",
+"        }",
+"    }",
+"}"]},
+p3:{t:"Leer todo lo que escribe el hijo",d:"Lanza, abre el lector, lee en bucle y espera al final.",lines:[
+"Process p = pb.start();",
+"try (BufferedReader br = p.inputReader()) {",
+"    String linea;",
+"    while ((linea = br.readLine()) != null) {",
+"        System.out.println(\"[hijo] \" + linea);",
+"    }",
+"}",
+"int codigo = p.waitFor();"]},
+p4:{t:"El hijo Mayus",d:"Lee hasta que el padre cierre la entrada.",lines:[
+"import java.util.Scanner;",
+"public class Mayus {",
+"    public static void main(String[] args) {",
+"        Scanner sc = new Scanner(System.in);",
+"        while (sc.hasNextLine()) {",
+"            String linea = sc.nextLine();",
+"            System.out.println(linea.toUpperCase());",
+"        }",
+"    }",
+"}"]},
+p5:{t:"Arrancar todos y luego esperar a todos",d:"Crea la lista, llénala en el primer bucle y espera en el segundo.",lines:[
+"List<Process> hijos = new ArrayList<>();",
+"for (int s = 1; s <= 3; s++) {",
+"    ProcessBuilder pb = new ProcessBuilder(\"java\", \"-cp\", cp, \"Dormilon\", String.valueOf(s));",
+"    hijos.add(pb.start());",
+"}",
+"for (Process p : hijos) {",
+"    p.waitFor();",
+"}"]},
+p6:{t:"Esperar 5 s, pedir que pare y, si no, forzar",d:"Es el patrón que pide el ejercicio 10 del boletín.",lines:[
+"Process p = pb.start();",
+"if (!p.waitFor(5, TimeUnit.SECONDS)) {",
+"    p.destroy();",
+"    if (!p.waitFor(2, TimeUnit.SECONDS)) {",
+"        p.destroyForcibly();",
+"    }",
+"}",
+"System.out.println(\"Código: \" + p.waitFor());"]},
+p7:{t:"Tu primer hilo",d:"Tarea, hilo, arrancar, esperar.",lines:[
+"Runnable tarea = () -> {",
+"    System.out.println(\"Hola desde el hilo\");",
+"};",
+"Thread h = new Thread(tarea);",
+"h.start();",
+"System.out.println(\"Hola desde el main\");",
+"h.join();",
+"System.out.println(\"Fin\");"]},
+p8:{t:"Crear N hilos, arrancarlos todos y esperar a todos",d:"Tres bucles: crear, start, join. Fíjate en la copia de i.",lines:[
+"Thread[] hilos = new Thread[n];",
+"for (int i = 0; i < n; i++) {",
+"    int id = i + 1;",
+"    hilos[i] = new Thread(() -> System.out.println(\"Soy el hilo \" + id));",
+"}",
+"for (Thread h : hilos) {",
+"    h.start();",
+"}",
+"for (Thread h : hilos) {",
+"    h.join();",
+"}"]},
+p9:{t:"Contador arreglado con synchronized",d:"Variable compartida, método sincronizado y dos hilos.",lines:[
+"static int contador = 0;",
+"static synchronized void sumarUno() {",
+"    contador++;",
+"}",
+"public static void main(String[] args) throws InterruptedException {",
+"    Runnable sumar = () -> { for (int i = 0; i < 100_000; i++) sumarUno(); };",
+"    Thread a = new Thread(sumar);",
+"    Thread b = new Thread(sumar);",
+"    a.start();",
+"    b.start();",
+"    a.join();",
+"    b.join();",
+"}"]},
+p10:{t:"El método coger del mostrador",d:"Esperar mientras esté vacío, coger, avisar y devolver.",lines:[
+"public synchronized int coger() throws InterruptedException {",
+"    while (panes.isEmpty()) {",
+"        wait();",
+"    }",
+"    int pan = panes.remove();",
+"    notifyAll();",
+"    return pan;",
+"}"]},
+p11:{t:"Un pool de 2 hilos para 5 tareas",d:"Crear el pool, mandar tareas, cerrar y esperar.",lines:[
+"ExecutorService pool = Executors.newFixedThreadPool(2);",
+"for (int i = 1; i <= 5; i++) {",
+"    int id = i;",
+"    pool.submit(() -> System.out.println(\"Tarea \" + id));",
+"}",
+"pool.shutdown();",
+"pool.awaitTermination(1, TimeUnit.MINUTES);",
+"System.out.println(\"Todas hechas\");"]}
+};
+
+/* ---------- caza el fallo ---------- */
+const BUGS={
+rb1:{d:"Este programa quiere hacer ping a localhost, pero salta IOException: Cannot run program \"ping -n 2 localhost\".",code:[
+"ProcessBuilder pb = new ProcessBuilder(\"ping -n 2 localhost\");",
+"pb.inheritIO();",
+"Process p = pb.start();",
+"int codigo = p.waitFor();",
+"System.out.println(\"Código: \" + codigo);"],bad:[0],
+why:"Con todo en una sola cadena, Java busca un programa que se llame literalmente «ping -n 2 localhost», y no existe. Cada palabra va por separado.",
+fix:"ProcessBuilder pb = new ProcessBuilder(\"ping\", \"-n\", \"2\", \"localhost\");"},
+rb2:{d:"Ejecutas «java Par 7» y el hijo revienta con ArrayIndexOutOfBoundsException: Index 1 out of bounds for length 1.",code:[
+"public class Par {",
+"    public static void main(String[] args) {",
+"        int n = Integer.parseInt(args[1]);",
+"        if (n % 2 == 0) {",
+"            System.exit(0);",
+"        } else {",
+"            System.exit(1);",
+"        }",
+"    }",
+"}"],bad:[2],
+why:"Con «java Par 7» solo hay un argumento, y la primera posición de un array es la 0. args[1] no existe.",
+fix:"int n = Integer.parseInt(args[0]);"},
+rb3:{d:"El hijo Sumador imprime 5, pero el padre revienta con NumberFormatException: Cannot parse null string. Además, el 5 sale en la consola.",code:[
+"ProcessBuilder pb = new ProcessBuilder(\"java\", \"-cp\", cp, \"Sumador\", \"2\", \"3\");",
+"pb.inheritIO();",
+"Process p = pb.start();",
+"String linea;",
+"try (BufferedReader br = p.inputReader()) {",
+"    linea = br.readLine();",
+"}",
+"p.waitFor();",
+"int r = Integer.parseInt(linea);"],bad:[1],
+why:"inheritIO() manda la salida del hijo directamente a la consola, así que por la tubería no llega nada: readLine() devuelve null y parseInt(null) revienta. Si quieres leer, no heredes la salida.",
+fix:"// borra pb.inheritIO();  (o usa solo pb.redirectError(ProcessBuilder.Redirect.INHERIT))"},
+rb4:{d:"El padre manda «hola» al hijo Mayus. Se ve HOLA en la consola, pero después el programa se queda colgado para siempre.",code:[
+"Process p = new ProcessBuilder(\"java\", \"-cp\", cp, \"Mayus\").start();",
+"BufferedWriter w = p.outputWriter();",
+"w.write(\"hola\");",
+"w.newLine();",
+"w.flush();",
+"try (BufferedReader br = p.inputReader()) {",
+"    String l;",
+"    while ((l = br.readLine()) != null) System.out.println(l);",
+"}",
+"p.waitFor();"],bad:[4],
+why:"flush() envía lo escrito pero NO cierra el flujo. El hijo sigue en hasNextLine() esperando más líneas y el padre sigue en readLine() esperando que el hijo acabe: se esperan el uno al otro para siempre.",
+fix:"w.close();     // o mejor: try (BufferedWriter w = p.outputWriter()) { … }"},
+rb5:{d:"Tres dormilones de 1, 2 y 3 segundos. El programa funciona, pero tarda 6 segundos en vez de 3.",code:[
+"for (int s = 1; s <= 3; s++) {",
+"    ProcessBuilder pb = new ProcessBuilder(\"java\", \"-cp\", cp, \"Dormilon\", String.valueOf(s));",
+"    pb.inheritIO();",
+"    Process p = pb.start();",
+"    p.waitFor();",
+"}"],bad:[4],
+why:"Con waitFor() dentro del mismo bucle, el padre espera a cada hijo antes de lanzar el siguiente: van uno detrás de otro (1 + 2 + 3 = 6 s). Hay que guardarlos en una lista y esperarlos en un segundo bucle.",
+fix:"hijos.add(pb.start());   // y después: for (Process p : hijos) p.waitFor();"},
+rb6:{d:"Revienta con IllegalThreadStateException: process hasn't exited.",code:[
+"ProcessBuilder pb = new ProcessBuilder(\"java\", \"-cp\", cp, \"Dormilon\", \"2\");",
+"Process p = pb.start();",
+"System.out.println(\"Código: \" + p.exitValue());"],bad:[2],
+why:"exitValue() solo funciona si el hijo YA ha terminado. Justo después de start() sigue durmiendo. Primero hay que esperar con waitFor() (o comprobar isAlive()).",
+fix:"System.out.println(\"Código: \" + p.waitFor());"},
+rb7:{d:"Debería salir ping y pong alternados, pero salen los 5 ping seguidos y después los 5 pong. Y tarda el doble.",code:[
+"Thread ping = new Thread(tareaPing);",
+"Thread pong = new Thread(tareaPong);",
+"ping.run();",
+"pong.start();",
+"ping.join();",
+"pong.join();"],bad:[2],
+why:"run() no crea ningún hilo: ejecuta la tarea en el propio main, como un método normal. El main hace los 5 ping y solo después llega a pong.start(). Para que vayan a la vez hay que usar start().",
+fix:"ping.start();"},
+rb8:{d:"Parecido a tu Cocina.java. Los cocineros cocinan de uno en uno y al final revienta con IllegalThreadStateException. Hay dos líneas mal: encuentra una.",code:[
+"Thread[] cocineros = new Thread[3];",
+"for (int i = 0; i < 3; i++) {",
+"    int id = i + 1;",
+"    cocineros[i] = new Thread(() -> cocinar(id));",
+"    cocineros[i].start();",
+"    cocineros[i].join();",
+"}",
+"for (Thread c : cocineros) {",
+"    c.start();",
+"}"],bad:[5,8],
+why:"Dos fallos. 1) join() dentro del primer bucle hace que el main espere a cada cocinero antes de lanzar el siguiente: no hay paralelismo. 2) El segundo bucle vuelve a llamar a start() sobre hilos que ya terminaron, y un hilo solo se puede arrancar UNA vez: IllegalThreadStateException.",
+fix:"// bucle 1: crear (y como mucho start)\n// bucle 2: for (Thread c : cocineros) c.join();\n// nunca start() dos veces sobre el mismo hilo"},
+rb9:{d:"4 vendedores y 100000 entradas. Al final se han vendido 112784. ¿Dónde está el fallo?",code:[
+"static volatile int quedan = 100000;",
+"",
+"static boolean vender() {",
+"    if (quedan > 0) {",
+"        quedan--;",
+"        return true;",
+"    }",
+"    return false;",
+"}"],bad:[2],
+why:"Falta synchronized. Dos hilos pueden ver a la vez quedan > 0 (los dos ven 1 entrada) y venderla los dos. Además quedan-- son tres pasos. volatile solo hace visible el valor, no deja entrar de uno en uno.",
+fix:"static synchronized boolean vender() {"},
+rb10:{d:"Al llamar a poner() revienta con IllegalMonitorStateException: current thread is not owner.",code:[
+"public void poner(int pan) throws InterruptedException {",
+"    while (panes.size() == capacidad) {",
+"        wait();",
+"    }",
+"    panes.add(pan);",
+"    notifyAll();",
+"}"],bad:[0],
+why:"wait() y notifyAll() solo se pueden llamar teniendo el candado del objeto, es decir, dentro de un método o bloque synchronized. Sin él, Java lanza IllegalMonitorStateException.",
+fix:"public synchronized void poner(int pan) throws InterruptedException {"},
+rb11:{d:"Un parking de 3 plazas, pero entran los 6 coches a la vez.",code:[
+"for (int i = 0; i < 6; i++) {",
+"    int id = i + 1;",
+"    coches[i] = new Thread(() -> {",
+"        Semaphore plazas = new Semaphore(3);",
+"        try {",
+"            plazas.acquire();",
+"            aparcar(id);",
+"            plazas.release();",
+"        } catch (InterruptedException e) { }",
+"    });",
+"}"],bad:[3],
+why:"Cada coche se crea su PROPIO semáforo de 3 plazas, así que ninguno tiene que esperar. El semáforo tiene que ser uno solo y compartido: static, fuera del hilo. (Y el release() debería ir en un finally.)",
+fix:"static Semaphore plazas = new Semaphore(3);   // fuera, compartido por todos"}
+};
+
+/* ---------- huecos ---------- */
+Object.assign(GAPS,{
+rg1:{t:"Lanzar el Bloc de notas y esperar",d:"Escribe la palabra que falta en cada hueco. Enter o Comprobar para corregir.",code:`import java.io.IOException;
+
+public class AbrirNotas {
+    public static void main(String[] args) {
+        try {
+            ProcessBuilder pb = new ⟦ProcessBuilder⟧("notepad.exe");
+            Process p = pb.⟦start⟧();
+            System.out.println("PID: " + p.⟦pid⟧());
+            int codigo = p.⟦waitFor⟧();
+            System.out.println("Cerrado con código " + codigo);
+        } catch (⟦IOException⟧ e) {
+            System.out.println("No existe ese programa");
+        } catch (⟦InterruptedException⟧ e) {
+            System.out.println("Interrumpido");
+        }
+    }
+}`},
+rg2:{t:"El padre pregunta si 10 es par",d:"Pasa el número como texto y lee la respuesta del código de salida.",code:`public class PadrePar {
+    public static void main(String[] args) throws Exception {
+        int numero = 10;
+        String cp = System.getProperty("⟦java.class.path⟧");
+        ProcessBuilder pb = new ProcessBuilder("java", "⟦-cp⟧", cp, "⟦Par⟧", ⟦String.valueOf⟧(numero));
+        Process p = pb.start();
+        int codigo = p.waitFor();
+        if (codigo == ⟦0⟧) {
+            System.out.println(numero + " es par");
+        } else {
+            System.out.println(numero + " es impar");
+        }
+    }
+}`},
+rg3:{t:"Leer la salida antes de esperar",d:"El bucle de lectura que vas a escribir en todos los ejercicios de este tema.",code:`Process p = pb.start();
+try (BufferedReader br = p.⟦inputReader⟧()) {
+    String linea;
+    while ((linea = br.⟦readLine⟧()) != ⟦null⟧) {
+        System.out.println(linea);
+    }
+}
+int codigo = p.⟦waitFor⟧();`},
+rg4:{t:"Mandar dos líneas al hijo y cerrar",d:"Escribe, salta de línea y deja que el try cierre el flujo.",code:`Process p = new ProcessBuilder("java", "-cp", cp, "Mayus").start();
+try (BufferedWriter w = p.⟦outputWriter⟧()) {
+    w.⟦write⟧("hola");
+    w.⟦newLine⟧();
+    w.write("adios");
+    w.newLine();
+}
+try (BufferedReader br = p.inputReader()) {
+    String linea;
+    while ((linea = br.readLine()) != null) {
+        System.out.println(linea);
+    }
+}`},
+rg5:{t:"Cinco hijos en paralelo",d:"Lista de procesos, arrancar todos y esperar a todos.",code:`⟦List⟧<Process> hijos = new ⟦ArrayList⟧<>();
+for (int i = 1; i <= 5; i++) {
+    ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Dormilon", "1");
+    hijos.⟦add⟧(pb.start());
+}
+for (⟦Process⟧ p : hijos) {
+    p.⟦waitFor⟧();
+}
+System.out.println("Vivos ahora: " + ProcessHandle.current().⟦children⟧().count());`},
+rg6:{t:"Darle 3 segundos y si no, cortar",d:"waitFor con límite devuelve un boolean.",code:`Process p = pb.start();
+if (p.waitFor(3, TimeUnit.⟦SECONDS⟧)) {
+    System.out.println("Terminó: " + p.⟦exitValue⟧());
+} else {
+    p.⟦destroy⟧();
+    if (!p.waitFor(2, TimeUnit.SECONDS)) {
+        p.⟦destroyForcibly⟧();
+    }
+}`},
+rg7:{t:"Un hilo que cuenta despacio",d:"Recuerda: el sleep dentro de la lambda necesita su propio try/catch.",code:`Thread contador = new Thread(() ⟦->⟧ {
+    try {
+        for (int i = 1; i <= 3; i++) {
+            System.out.println(i);
+            Thread.⟦sleep⟧(500);
+        }
+    } catch (⟦InterruptedException⟧ e) {
+        System.out.println("Me han interrumpido");
+    }
+});
+contador.⟦start⟧();
+contador.⟦join⟧();
+System.out.println("Fin");`},
+rg8:{t:"Despertar a un hilo dormido",d:"Copia de i para la lambda, nombre del hilo e interrupt.",code:`for (int i = 0; i < 3; i++) {
+    int ⟦id⟧ = i + 1;
+    hilos[i] = new Thread(() -> System.out.println("Hola, soy " + id), "Hilo-" + id);
+}
+Thread dormilon = new Thread(() -> {
+    try {
+        Thread.sleep(10_000);
+    } catch (InterruptedException e) {
+        System.out.println("¡Despierto!");
+    }
+});
+dormilon.start();
+dormilon.⟦interrupt⟧();
+dormilon.join();
+System.out.println(dormilon.⟦getState⟧());   // TERMINATED`},
+rg9:{t:"El contador con AtomicInteger",d:"Sin synchronized: la propia variable es segura.",code:`import java.util.concurrent.atomic.AtomicInteger;
+
+public class Atomico {
+    static ⟦AtomicInteger⟧ contador = new AtomicInteger(⟦0⟧);
+
+    public static void main(String[] args) throws InterruptedException {
+        Runnable sumar = () -> {
+            for (int i = 0; i < 100_000; i++) {
+                contador.⟦incrementAndGet⟧();
+            }
+        };
+        Thread a = new Thread(sumar);
+        Thread b = new Thread(sumar);
+        a.start(); b.start();
+        a.join(); b.join();
+        System.out.println(contador.⟦get⟧());   // siempre 200000
+    }
+}`},
+rg10:{t:"El método poner",d:"Lleno → esperar. Después añadir y avisar.",code:`public ⟦synchronized⟧ void poner(int pan) throws InterruptedException {
+    ⟦while⟧ (panes.size() == capacidad) {
+        ⟦wait⟧();
+    }
+    panes.add(pan);
+    ⟦notifyAll⟧();
+}`},
+rg11:{t:"Entrar y salir del parking",d:"Coger plaza, aparcar y devolverla siempre.",code:`static Semaphore plazas = new ⟦Semaphore⟧(3);
+
+// dentro del hilo de cada coche:
+try {
+    plazas.⟦acquire⟧();
+    try {
+        System.out.println("Aparco");
+        Thread.sleep(1000);
+    } ⟦finally⟧ {
+        plazas.⟦release⟧();
+    }
+} catch (InterruptedException e) {
+    return;
+}`}
+});
+
+/* ---------- jefes de nivel ---------- */
+const rx=(re,lab)=>[lab,re];
+Object.assign(FREE,{
+rf1:{t:"PingLocal",d:"Haz ping 2 veces a localhost. En Windows la opción es -n y en Linux/Mac es -c: elige la buena según el sistema. Muestra el código de salida al final.",
+start:`import java.io.IOException;
+
+public class PingLocal {
+    public static void main(String[] args) {
+        // 1. Averigua el sistema y elige "-n" (Windows) o "-c" (Linux/Mac)
+
+        try {
+            // 2. Prepara la orden: ping <opcion> 2 localhost
+
+            // 3. Que la salida del ping se vea en tu consola, y lánzalo
+
+            // 4. Espera y muestra el código de salida
+
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}`,
+checks:[
+ rx(/getProperty\s*\(\s*"os\.name"\s*\)/,"Lees el sistema con System.getProperty(\"os.name\")"),
+ rx(/contains\s*\(\s*"win"\s*\)|startsWith\s*\(\s*"Win"\s*\)|contains\s*\(\s*"Win"\s*\)/,"Compruebas si es Windows (contains(\"win\"))"),
+ rx(/"-n"[\s\S]*"-c"|"-c"[\s\S]*"-n"/,"Usas \"-n\" o \"-c\" según el sistema"),
+ rx(/new\s+ProcessBuilder\s*\(\s*"ping"\s*,\s*\w+\s*,\s*"2"\s*,\s*"localhost"\s*\)/,"new ProcessBuilder(\"ping\", opcion, \"2\", \"localhost\"), cada palabra por separado"),
+ rx(/\.inheritIO\s*\(\s*\)/,"Heredas la salida con inheritIO()"),
+ rx(/\.start\s*\(\s*\)/,"Lanzas el proceso con start()"),
+ rx(/\.waitFor\s*\(\s*\)/,"Esperas con waitFor()"),
+ rx(/System\.out\.println\s*\([^;]*(codigo|waitFor|exit)/i,"Muestras el código de salida")],
+sol:`import java.io.IOException;
+
+public class PingLocal {
+    public static void main(String[] args) {
+        String so = System.getProperty("os.name").toLowerCase();
+        String opcion = so.contains("win") ? "-n" : "-c";
+        try {
+            ProcessBuilder pb = new ProcessBuilder("ping", opcion, "2", "localhost");
+            pb.inheritIO();
+            Process p = pb.start();
+            int codigo = p.waitFor();
+            System.out.println("ping ha terminado con código " + codigo);
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}`},
+rf2:{t:"Portero y Discoteca",d:"El hijo Portero recibe una edad y sale con 0 si es mayor de edad, 1 si es menor y 2 si no es un número. El padre Discoteca lo lanza con \"25\", \"16\" y \"abc\" y dice qué pasa con cada uno. Escribe las dos clases aquí (en tu PC, cada una en su fichero).",
+start:`// ===== Fichero Portero.java (HIJO) =====
+public class Portero {
+    public static void main(String[] args) {
+        try {
+            // 1. Convierte args[0] en un int
+
+            // 2. Sale con 0 si edad >= 18, si no con 1
+
+        } catch (NumberFormatException e) {
+            // 3. No era un número: sale con 2
+
+        }
+    }
+}
+
+// ===== Fichero Discoteca.java (PADRE) =====
+public class Discoteca {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        String[] edades = {"25", "16", "abc"};
+        for (String edad : edades) {
+            // 4. Lanza: java -cp cp Portero edad, y espera su código
+
+            // 5. 0 → "pasa", 1 → "no pasa", otro → "dato no válido"
+
+        }
+    }
+}`,
+checks:[
+ rx(/Integer\.parseInt\s*\(\s*args\s*\[\s*0\s*\]\s*\)/,"Portero convierte args[0] con Integer.parseInt"),
+ rx(/>=\s*18|>\s*17/,"Compara la edad con 18"),
+ rx(/System\.exit\s*\(\s*0\s*\)/,"System.exit(0) para mayor de edad"),
+ rx(/System\.exit\s*\(\s*1\s*\)/,"System.exit(1) para menor"),
+ rx(/catch\s*\(\s*NumberFormatException[\s\S]*?System\.exit\s*\(\s*2\s*\)/,"System.exit(2) dentro del catch de NumberFormatException"),
+ rx(/new\s+ProcessBuilder\s*\(\s*"java"\s*,\s*"-cp"\s*,\s*cp\s*,\s*"Portero"\s*,\s*edad\s*\)/,"Discoteca lanza \"java\", \"-cp\", cp, \"Portero\", edad"),
+ rx(/\.start\s*\(\s*\)[\s\S]*\.waitFor\s*\(\s*\)/,"Lanza y espera el código con waitFor()"),
+ rx(/else\s+if/,"Distingue los tres casos con if / else if / else"),
+ rx(/"[^"]*no válido[^"]*"|"[^"]*no valido[^"]*"/i,"Muestra «dato no válido» para el código 2")],
+sol:`// ===== Portero.java =====
+public class Portero {
+    public static void main(String[] args) {
+        try {
+            int edad = Integer.parseInt(args[0]);
+            if (edad >= 18) {
+                System.exit(0);
+            } else {
+                System.exit(1);
+            }
+        } catch (NumberFormatException e) {
+            System.exit(2);
+        }
+    }
+}
+
+// ===== Discoteca.java =====
+public class Discoteca {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        String[] edades = {"25", "16", "abc"};
+        for (String edad : edades) {
+            ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Portero", edad);
+            Process p = pb.start();
+            int codigo = p.waitFor();
+            if (codigo == 0) {
+                System.out.println(edad + ": pasa");
+            } else if (codigo == 1) {
+                System.out.println(edad + ": no pasa");
+            } else {
+                System.out.println(edad + ": dato no válido");
+            }
+        }
+    }
+}`},
+rf3:{t:"Sumador y PadreSumador",d:"El hijo Sumador recibe dos números y escribe su suma. El padre lo lanza para 2+3, 10+20 y 7+8, LEE cada resultado, lo convierte a int y al final muestra el total (50).",
+start:`// ===== Fichero Sumador.java (HIJO) =====
+public class Sumador {
+    public static void main(String[] args) {
+        // 1. Convierte args[0] y args[1] y escribe la suma con println
+
+    }
+}
+
+// ===== Fichero PadreSumador.java (PADRE) =====
+import java.io.BufferedReader;
+
+public class PadreSumador {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        String[][] pares = {{"2", "3"}, {"10", "20"}, {"7", "8"}};
+        int total = 0;
+        for (String[] par : pares) {
+            // 2. Lanza Sumador con par[0] y par[1] (¡sin inheritIO!)
+
+            // 3. Lee la línea que escribe el hijo
+
+            // 4. Espera, conviértela a int, muéstrala y súmala al total
+
+        }
+        System.out.println("Total: " + total);
+    }
+}`,
+checks:[
+ rx(/System\.out\.println\s*\(\s*\w+\s*\+\s*\w+\s*\)/,"Sumador escribe la suma con println(a + b)"),
+ rx(/"Sumador"\s*,\s*par\s*\[\s*0\s*\]\s*,\s*par\s*\[\s*1\s*\]/,"El padre lanza \"Sumador\", par[0], par[1]"),
+ {0:"No usas inheritIO() (si no, no llega nada a la tubería)",1:{test:c=>!/inheritIO/.test(c)}},
+ rx(/\.inputReader\s*\(\s*\)/,"Abres el lector con inputReader()"),
+ rx(/\.readLine\s*\(\s*\)/,"Lees con readLine()"),
+ rx(/Integer\.parseInt\s*\(\s*linea\s*\)|Integer\.parseInt\s*\(\s*\w+\s*\)[\s\S]*total/,"Conviertes el texto leído con Integer.parseInt"),
+ rx(/total\s*\+=|total\s*=\s*total\s*\+/,"Acumulas en total"),
+ rx(/\.waitFor\s*\(\s*\)/,"Esperas al hijo con waitFor()")].map(c=>Array.isArray(c)?c:[c[0],c[1]]),
+sol:`// ===== Sumador.java =====
+public class Sumador {
+    public static void main(String[] args) {
+        int a = Integer.parseInt(args[0]);
+        int b = Integer.parseInt(args[1]);
+        System.out.println(a + b);
+    }
+}
+
+// ===== PadreSumador.java =====
+import java.io.BufferedReader;
+
+public class PadreSumador {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        String[][] pares = {{"2", "3"}, {"10", "20"}, {"7", "8"}};
+        int total = 0;
+        for (String[] par : pares) {
+            ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Sumador", par[0], par[1]);
+            Process p = pb.start();
+            String linea;
+            try (BufferedReader br = p.inputReader()) {
+                linea = br.readLine();
+            }
+            p.waitFor();
+            int resultado = Integer.parseInt(linea);
+            System.out.println(par[0] + " + " + par[1] + " = " + resultado);
+            total += resultado;
+        }
+        System.out.println("Total: " + total);
+    }
+}`},
+rf4:{t:"Invertir y PadreInvertir",d:"El hijo Invertir lee líneas hasta que se cierre su entrada, escribe cada una al revés y al final dice por System.err cuántas ha invertido. El padre le manda \"radar\", \"hilo\" y \"proceso\", cierra, y muestra lo que le devuelve.",
+start:`// ===== Fichero Invertir.java (HIJO) =====
+import java.util.Scanner;
+
+public class Invertir {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = 0;
+        // 1. Mientras haya líneas: léela, escríbela al revés y cuenta
+
+        // 2. Al final, por System.err: "He invertido N palabras"
+
+    }
+}
+
+// ===== Fichero PadreInvertir.java (PADRE) =====
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+
+public class PadreInvertir {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Invertir");
+        // 3. Que los errores del hijo salgan en tu consola
+
+        Process p = pb.start();
+        String[] palabras = {"radar", "hilo", "proceso"};
+        // 4. Escribe cada palabra en una línea y cierra
+
+        // 5. Lee y muestra todo lo que devuelve el hijo
+
+        System.out.println("Código: " + p.waitFor());
+    }
+}`,
+checks:[
+ rx(/while\s*\(\s*sc\.hasNextLine\s*\(\s*\)\s*\)/,"El hijo lee con while (sc.hasNextLine())"),
+ rx(/\.reverse\s*\(\s*\)/,"Le da la vuelta con new StringBuilder(...).reverse()"),
+ rx(/n\s*\+\+|n\s*\+=\s*1/,"Cuenta las líneas"),
+ rx(/System\.err\.println/,"Informa por System.err"),
+ rx(/redirectError\s*\(\s*ProcessBuilder\.Redirect\.INHERIT\s*\)|errorReader/,"Los errores del hijo llegan al padre (redirectError o errorReader)"),
+ rx(/try\s*\(\s*BufferedWriter\s+\w+\s*=\s*p\.outputWriter\s*\(\s*\)\s*\)|\.close\s*\(\s*\)/,"Abres outputWriter() y lo cierras (try con recursos o close())"),
+ rx(/for\s*\(\s*String\s+\w+\s*:\s*palabras\s*\)[\s\S]*?\.write\s*\(/,"Recorres palabras y las escribes con write"),
+ rx(/\.newLine\s*\(\s*\)/,"Salto de línea con newLine()"),
+ rx(/\.inputReader\s*\(\s*\)[\s\S]*readLine/,"Lees la respuesta con inputReader() y readLine()")],
+sol:`// ===== Invertir.java =====
+import java.util.Scanner;
+
+public class Invertir {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = 0;
+        while (sc.hasNextLine()) {
+            String linea = sc.nextLine();
+            System.out.println(new StringBuilder(linea).reverse());
+            n++;
+        }
+        System.err.println("He invertido " + n + " palabras");
+    }
+}
+
+// ===== PadreInvertir.java =====
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+
+public class PadreInvertir {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Invertir");
+        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        Process p = pb.start();
+
+        String[] palabras = {"radar", "hilo", "proceso"};
+        try (BufferedWriter w = p.outputWriter()) {
+            for (String palabra : palabras) {
+                w.write(palabra);
+                w.newLine();
+            }
+        }
+
+        try (BufferedReader br = p.inputReader()) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                System.out.println(linea);
+            }
+        }
+        System.out.println("Código: " + p.waitFor());
+    }
+}`},
+rf5:{t:"Corredor y Carrera",d:"El hijo Corredor recibe su dorsal, duerme entre 1 y 3 s al azar y dice «Corredor N llega en X ms». El padre lanza 3 corredores A LA VEZ, medio segundo después muestra cuántos siguen corriendo, espera a todos y muestra el tiempo total.",
+start:`// ===== Fichero Corredor.java (HIJO) =====
+import java.util.concurrent.ThreadLocalRandom;
+
+public class Corredor {
+    public static void main(String[] args) throws InterruptedException {
+        // 1. Dorsal de args[0], ms al azar entre 1000 y 3000, duerme y avisa
+
+    }
+}
+
+// ===== Fichero Carrera.java (PADRE) =====
+import java.util.ArrayList;
+import java.util.List;
+
+public class Carrera {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        long inicio = System.currentTimeMillis();
+        // 2. Lista de procesos y bucle que lanza los corredores 1, 2 y 3
+
+        // 3. Espera 500 ms y muestra cuántos hijos siguen vivos
+
+        // 4. Segundo bucle: espera a todos
+
+        // 5. Muestra el tiempo total
+    }
+}`,
+checks:[
+ rx(/ThreadLocalRandom\.current\s*\(\s*\)\.nextInt\s*\(\s*1000\s*,\s*3001\s*\)/,"Corredor elige el tiempo con ThreadLocalRandom ... nextInt(1000, 3001)"),
+ rx(/Thread\.sleep\s*\(\s*\w+\s*\)/,"Corredor duerme ese tiempo"),
+ rx(/List\s*<\s*Process\s*>\s*\w+\s*=\s*new\s+ArrayList\s*<\s*>\s*\(\s*\)/,"List<Process> ... = new ArrayList<>()"),
+ rx(/\.add\s*\(\s*\w+\.start\s*\(\s*\)\s*\)/,"Guardas cada hijo con lista.add(pb.start())"),
+ rx(/"Corredor"\s*,\s*String\.valueOf\s*\(\s*\w+\s*\)/,"Le pasas el dorsal con String.valueOf"),
+ rx(/children\s*\(\s*\)\s*\.count\s*\(\s*\)/,"Cuentas los vivos con ProcessHandle.current().children().count()"),
+ rx(/for\s*\(\s*Process\s+\w+\s*:\s*\w+\s*\)\s*\{?\s*\w+\.waitFor\s*\(\s*\)/,"Esperas en un segundo bucle: for (Process p : lista) p.waitFor()"),
+ {0:"No hay waitFor() en el mismo bucle que start()",1:{test:c=>!/for\s*\(\s*int[^{]*\{[^}]*\.start\s*\(\s*\)[^}]*\.waitFor\s*\(/.test(c)}},
+ rx(/currentTimeMillis\s*\(\s*\)\s*-\s*inicio/,"Calculas el tiempo con currentTimeMillis() - inicio")].map(c=>Array.isArray(c)?c:[c[0],c[1]]),
+sol:`// ===== Corredor.java =====
+import java.util.concurrent.ThreadLocalRandom;
+
+public class Corredor {
+    public static void main(String[] args) throws InterruptedException {
+        int dorsal = Integer.parseInt(args[0]);
+        int ms = ThreadLocalRandom.current().nextInt(1000, 3001);
+        Thread.sleep(ms);
+        System.out.println("Corredor " + dorsal + " llega en " + ms + " ms");
+    }
+}
+
+// ===== Carrera.java =====
+import java.util.ArrayList;
+import java.util.List;
+
+public class Carrera {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        long inicio = System.currentTimeMillis();
+        List<Process> corredores = new ArrayList<>();
+
+        for (int i = 1; i <= 3; i++) {
+            ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Corredor", String.valueOf(i));
+            pb.inheritIO();
+            corredores.add(pb.start());
+        }
+
+        Thread.sleep(500);
+        long vivos = ProcessHandle.current().children().count();
+        System.out.println("Corriendo: " + vivos);
+
+        for (Process p : corredores) {
+            p.waitFor();
+        }
+        System.out.println("Carrera terminada en " + (System.currentTimeMillis() - inicio) + " ms");
+    }
+}`},
+rf6:{t:"Cronometrado",d:"Lanza un Dormilon con los segundos de args[0]. Cada segundo comprueba si sigue vivo y lo dice. Si a los 4 segundos sigue vivo, pídele que pare, dale 2 s y, si no, fuérzalo. Muestra siempre el código final. (Usa el Dormilon del ejemplo.)",
+start:`import java.util.concurrent.TimeUnit;
+
+public class Cronometrado {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Dormilon", args[0]);
+        pb.inheritIO();
+        Process p = pb.start();
+
+        int segundos = 0;
+        // 1. Mientras siga vivo y no lleves 4 s: duerme 1 s, suma y avisa
+
+        // 2. Si sigue vivo: destroy(), espera 2 s y si hace falta destroyForcibly()
+
+        // 3. Muestra el código final
+    }
+}`,
+checks:[
+ rx(/while\s*\([^)]*isAlive\s*\(\s*\)[^)]*segundos\s*<\s*4|while\s*\([^)]*segundos\s*<\s*4[^)]*isAlive\s*\(\s*\)/,"while (p.isAlive() && segundos < 4)"),
+ rx(/Thread\.sleep\s*\(\s*1000\s*\)/,"Duermes 1 s con Thread.sleep(1000)"),
+ rx(/segundos\s*\+\+|segundos\s*\+=\s*1/,"Cuentas los segundos"),
+ rx(/if\s*\(\s*p\.isAlive\s*\(\s*\)\s*\)[\s\S]*\.destroy\s*\(\s*\)/,"Si sigue vivo, llamas a destroy()"),
+ rx(/!\s*p\.waitFor\s*\(\s*2\s*,\s*TimeUnit\.SECONDS\s*\)/,"Le das 2 s: if (!p.waitFor(2, TimeUnit.SECONDS))"),
+ rx(/\.destroyForcibly\s*\(\s*\)/,"Último recurso: destroyForcibly()"),
+ rx(/println\s*\([^;]*p\.waitFor\s*\(\s*\)|println\s*\([^;]*exitValue/,"Muestras el código final")],
+sol:`import java.util.concurrent.TimeUnit;
+
+public class Cronometrado {
+    public static void main(String[] args) throws Exception {
+        String cp = System.getProperty("java.class.path");
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Dormilon", args[0]);
+        pb.inheritIO();
+        Process p = pb.start();
+
+        int segundos = 0;
+        while (p.isAlive() && segundos < 4) {
+            Thread.sleep(1000);
+            segundos++;
+            if (p.isAlive()) {
+                System.out.println("Sigue vivo (" + segundos + " s)");
+            }
+        }
+
+        if (p.isAlive()) {
+            System.out.println("Demasiado: lo paro");
+            p.destroy();
+            if (!p.waitFor(2, TimeUnit.SECONDS)) {
+                p.destroyForcibly();
+            }
+        }
+        System.out.println("Código final: " + p.waitFor());
+    }
+}`},
+rf7:{t:"PingPong",d:"Dos hilos: uno escribe \"ping\" 5 veces y otro \"pong\" 5 veces, los dos con una pausa de 300 ms. El main los arranca a la vez, espera a los dos y escribe \"Fin\".",
+start:`public class PingPong {
+    public static void main(String[] args) throws InterruptedException {
+        // 1. Hilo ping: 5 veces "ping" con sleep(300) (¡try/catch dentro!)
+
+        // 2. Hilo pong: igual con "pong"
+
+        // 3. Arranca los dos, espera a los dos y escribe "Fin"
+
+    }
+}`,
+checks:[
+ rx(/new\s+Thread\s*\(\s*\(\s*\)\s*->[\s\S]*new\s+Thread\s*\(\s*\(\s*\)\s*->/,"Dos hilos creados con new Thread(() -> { ... })"),
+ rx(/"ping"/,"Uno escribe \"ping\""),
+ rx(/"\s*pong"/,"El otro escribe \"pong\""),
+ rx(/Thread\.sleep\s*\(\s*300\s*\)[\s\S]*Thread\.sleep\s*\(\s*300\s*\)/,"Pausa de 300 ms en los dos"),
+ rx(/catch\s*\(\s*InterruptedException[\s\S]*catch\s*\(\s*InterruptedException/,"Cada lambda trata InterruptedException con try/catch"),
+ rx(/\.start\s*\(\s*\)[\s\S]*\.start\s*\(\s*\)/,"Arrancas los dos con start()"),
+ {0:"No usas run() (eso no crea hilos)",1:{test:c=>!/\.run\s*\(\s*\)/.test(c)}},
+ rx(/\.join\s*\(\s*\)[\s\S]*\.join\s*\(\s*\)[\s\S]*"Fin"/,"Esperas a los dos con join() antes de escribir \"Fin\"")].map(c=>Array.isArray(c)?c:[c[0],c[1]]),
+sol:CODE_PINGPONG()},
+rf8:{t:"Cocina",d:"3 cocineros (hilos) que preparan 3 platos cada uno, con 200 ms por plato. Cada mensaje dice qué cocinero y qué plato. El main espera a todos y escribe \"Todos los platos listos\". Tiene que tardar unos 0,6 s.",
+start:`public class Cocina {
+    public static void main(String[] args) throws InterruptedException {
+        int n = 3;
+        Thread[] cocineros = new Thread[n];
+
+        // 1. Bucle para CREAR los n hilos (copia de i para la lambda)
+        //    Cada uno: 3 platos, "Cocinero X prepara el plato Y", sleep(200)
+
+        // 2. Bucle para ARRANCAR todos
+
+        // 3. Bucle para ESPERAR a todos
+
+        System.out.println("Todos los platos listos");
+    }
+}`,
+checks:[
+ rx(/for\s*\(\s*int\s+i\s*=\s*0\s*;\s*i\s*<\s*n/,"Bucle de 0 a n para crear los hilos"),
+ rx(/int\s+\w+\s*=\s*i\s*(\+\s*1)?\s*;/,"Copia de i (int id = i + 1;) para usarla en la lambda"),
+ rx(/cocineros\s*\[\s*i\s*\]\s*=\s*new\s+Thread\s*\(/,"cocineros[i] = new Thread(...)"),
+ rx(/for\s*\(\s*int\s+\w+\s*=\s*1\s*;\s*\w+\s*<=\s*3/,"Bucle interior de 3 platos"),
+ rx(/Thread\.sleep\s*\(\s*200\s*\)/,"200 ms por plato"),
+ rx(/for\s*\(\s*Thread\s+\w+\s*:\s*cocineros\s*\)\s*\{?\s*\w+\.start\s*\(\s*\)/,"Un bucle que hace start() de todos"),
+ rx(/for\s*\(\s*Thread\s+\w+\s*:\s*cocineros\s*\)\s*\{?\s*\w+\.join\s*\(\s*\)/,"Otro bucle que hace join() de todos"),
+ {0:"Ningún join() dentro del bucle que crea los hilos",1:{test:c=>!/for\s*\(\s*int\s+i[\s\S]*?cocineros\s*\[\s*i\s*\]\s*\.join/.test(c)}}].map(c=>Array.isArray(c)?c:[c[0],c[1]]),
+sol:CODE.r8ex.replace(/ *\/\/[^\n]*/g,"").replace(/\n\s*\n\s*\n/g,"\n\n")},
+rf9:{t:"Taquilla",d:"Hay 1000 entradas. 4 hilos vendedores venden mientras queden. Cada vendedor cuenta las suyas. Al final se muestra cuántas ha vendido cada uno y el total, que tiene que ser exactamente 1000.",
+start:`public class Taquilla {
+    static int quedan = 1000;
+
+    // 1. Método vender(): si quedan, resta una y devuelve true; si no, false.
+    //    Que solo pueda entrar un hilo a la vez.
+
+    public static void main(String[] args) throws InterruptedException {
+        int[] vendidas = new int[4];
+        Thread[] vendedores = new Thread[4];
+        // 2. Crea los 4 hilos: mientras vender() dé true, vendidas[id]++
+
+        // 3. Arranca todos y espera a todos
+
+        // 4. Muestra lo de cada vendedor y el total
+    }
+}`,
+checks:[
+ rx(/static\s+synchronized\s+boolean\s+vender\s*\(\s*\)/,"static synchronized boolean vender()"),
+ rx(/if\s*\(\s*quedan\s*>\s*0\s*\)/,"Compruebas if (quedan > 0)"),
+ rx(/quedan\s*--|quedan\s*-=\s*1/,"Restas una entrada"),
+ rx(/return\s+true[\s\S]*return\s+false/,"Devuelves true si vendes y false si no quedan"),
+ rx(/while\s*\(\s*vender\s*\(\s*\)\s*\)/,"Cada hilo vende con while (vender())"),
+ rx(/vendidas\s*\[\s*\w+\s*\]\s*\+\+/,"Cuenta en vendidas[id]++"),
+ rx(/\.start\s*\(\s*\)[\s\S]*\.join\s*\(\s*\)/,"Arrancas y esperas a todos"),
+ rx(/total\s*\+=/,"Sumas el total")],
+sol:`public class Taquilla {
+    static int quedan = 1000;
+
+    static synchronized boolean vender() {
+        if (quedan > 0) {
+            quedan--;
+            return true;
+        }
+        return false;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        int[] vendidas = new int[4];
+        Thread[] vendedores = new Thread[4];
+        for (int i = 0; i < 4; i++) {
+            int id = i;
+            vendedores[i] = new Thread(() -> {
+                while (vender()) {
+                    vendidas[id]++;
+                }
+            });
+        }
+        for (Thread v : vendedores) v.start();
+        for (Thread v : vendedores) v.join();
+
+        int total = 0;
+        for (int i = 0; i < 4; i++) {
+            System.out.println("Vendedor " + (i + 1) + ": " + vendidas[i]);
+            total += vendidas[i];
+        }
+        System.out.println("Total vendidas: " + total + " · quedan " + quedan);
+    }
+}`},
+rf10:{t:"Buzón",d:"Un buzón donde solo cabe UNA carta. enviar() espera si ya hay una; recoger() espera si está vacío. El hilo cartero envía \"hola\", \"que tal\", \"adios\" y \"FIN\". El hilo vecino recoge y muestra cartas hasta que llegue \"FIN\". El programa tiene que terminar solo.",
+start:`public class Buzon {
+    private String carta = null;          // null = buzón vacío
+
+    // 1. enviar(String texto): mientras haya carta, espera. Guárdala y avisa.
+
+    // 2. recoger(): mientras no haya carta, espera. Sácala, vacía el buzón, avisa y devuélvela.
+
+    public static void main(String[] args) throws InterruptedException {
+        Buzon b = new Buzon();
+        // 3. Hilo cartero: envía las tres cartas y "FIN"
+
+        // 4. Hilo vecino: recoge y muestra hasta "FIN"
+
+        // 5. Arranca los dos y espera a los dos
+    }
+}`,
+checks:[
+ rx(/public\s+synchronized\s+void\s+enviar\s*\(\s*String\s+\w+\s*\)/,"public synchronized void enviar(String texto)"),
+ rx(/public\s+synchronized\s+String\s+recoger\s*\(\s*\)/,"public synchronized String recoger()"),
+ rx(/while\s*\(\s*carta\s*!=\s*null\s*\)\s*\{?\s*wait\s*\(\s*\)/,"enviar: while (carta != null) wait();"),
+ rx(/while\s*\(\s*carta\s*==\s*null\s*\)\s*\{?\s*wait\s*\(\s*\)/,"recoger: while (carta == null) wait();"),
+ rx(/notifyAll\s*\(\s*\)[\s\S]*notifyAll\s*\(\s*\)/,"notifyAll() en los dos métodos"),
+ rx(/=\s*carta\s*;\s*carta\s*=\s*null\s*;/,"recoger guarda la carta y vacía el buzón (carta = null)"),
+ rx(/"FIN"/,"Se usa \"FIN\" para terminar"),
+ rx(/\.equals\s*\(\s*"FIN"\s*\)|"FIN"\s*\.equals/,"Comparas textos con equals, no con =="),
+ rx(/\.start\s*\(\s*\)[\s\S]*\.start\s*\(\s*\)[\s\S]*\.join\s*\(\s*\)[\s\S]*\.join\s*\(\s*\)/,"Arrancas y esperas a los dos hilos")],
+sol:`public class Buzon {
+    private String carta = null;
+
+    public synchronized void enviar(String texto) throws InterruptedException {
+        while (carta != null) {
+            wait();
+        }
+        carta = texto;
+        notifyAll();
+    }
+
+    public synchronized String recoger() throws InterruptedException {
+        while (carta == null) {
+            wait();
+        }
+        String c = carta;
+        carta = null;
+        notifyAll();
+        return c;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Buzon b = new Buzon();
+        Thread cartero = new Thread(() -> {
+            try {
+                for (String s : new String[]{"hola", "que tal", "adios"}) {
+                    b.enviar(s);
+                }
+                b.enviar("FIN");
+            } catch (InterruptedException e) {
+                return;
+            }
+        });
+        Thread vecino = new Thread(() -> {
+            try {
+                String c;
+                while (!(c = b.recoger()).equals("FIN")) {
+                    System.out.println("Vecino lee: " + c);
+                }
+            } catch (InterruptedException e) {
+                return;
+            }
+        });
+        cartero.start();
+        vecino.start();
+        cartero.join();
+        vecino.join();
+    }
+}`},
+rf11:{t:"Fotocopiadora",d:"Hay 2 fotocopiadoras y 5 alumnos. Cada alumno es una tarea de un pool de 5 hilos: coge máquina, «Alumno N fotocopia», 500 ms, «Alumno N deja la máquina» y la devuelve siempre. Al final: «Todos tienen sus apuntes».",
+start:`import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+public class Fotocopiadora {
+    // 1. Un semáforo compartido con 2 permisos
+
+    public static void main(String[] args) throws InterruptedException {
+        // 2. Pool de 5 hilos
+
+        // 3. Manda 5 tareas: acquire, fotocopia 500 ms, release en finally
+
+        // 4. Cierra el pool y espera a que acabe
+
+        System.out.println("Todos tienen sus apuntes");
+    }
+}`,
+checks:[
+ rx(/static\s+(final\s+)?Semaphore\s+\w+\s*=\s*new\s+Semaphore\s*\(\s*2\s*\)/,"static Semaphore ... = new Semaphore(2), fuera de las tareas"),
+ rx(/Executors\.newFixedThreadPool\s*\(\s*5\s*\)/,"Executors.newFixedThreadPool(5)"),
+ rx(/\.submit\s*\(\s*\(\s*\)\s*->/,"Mandas tareas con pool.submit(() -> ...)"),
+ rx(/\.acquire\s*\(\s*\)/,"Coges máquina con acquire()"),
+ rx(/finally\s*\{[\s\S]*?\.release\s*\(\s*\)/,"Devuelves la máquina con release() dentro de finally"),
+ rx(/Thread\.sleep\s*\(\s*500\s*\)/,"Fotocopiar dura 500 ms"),
+ rx(/\.shutdown\s*\(\s*\)/,"Cierras el pool con shutdown()"),
+ rx(/\.awaitTermination\s*\(/,"Esperas con awaitTermination(...)")],
+sol:`import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+public class Fotocopiadora {
+    static Semaphore maquinas = new Semaphore(2);
+
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService pool = Executors.newFixedThreadPool(5);
+        for (int i = 1; i <= 5; i++) {
+            int id = i;
+            pool.submit(() -> {
+                try {
+                    maquinas.acquire();
+                    try {
+                        System.out.println("Alumno " + id + " fotocopia");
+                        Thread.sleep(500);
+                    } finally {
+                        System.out.println("Alumno " + id + " deja la máquina");
+                        maquinas.release();
+                    }
+                } catch (InterruptedException e) {
+                    return;
+                }
+            });
+        }
+        pool.shutdown();
+        pool.awaitTermination(1, TimeUnit.MINUTES);
+        System.out.println("Todos tienen sus apuntes");
+    }
+}`}
+});
+function CODE_PINGPONG(){return `public class PingPong {
+    public static void main(String[] args) throws InterruptedException {
+        Thread ping = new Thread(() -> {
+            try {
+                for (int i = 0; i < 5; i++) {
+                    System.out.println("ping");
+                    Thread.sleep(300);
+                }
+            } catch (InterruptedException e) {
+                System.out.println("ping interrumpido");
+            }
+        });
+        Thread pong = new Thread(() -> {
+            try {
+                for (int i = 0; i < 5; i++) {
+                    System.out.println("        pong");
+                    Thread.sleep(300);
+                }
+            } catch (InterruptedException e) {
+                System.out.println("pong interrumpido");
+            }
+        });
+        ping.start();
+        pong.start();
+        ping.join();
+        pong.join();
+        System.out.println("Fin");
+    }
+}`;}
+
+/* ---------- tests de cada nivel ---------- */
+Object.assign(QUIZ,{
+r1:[
+ {q:"¿Qué devuelve p.waitFor()?",o:["El PID del hijo","Un int con el código de salida del hijo (0 = bien)","Lo que el hijo ha escrito","true o false"],a:1,e:"waitFor() bloquea al padre hasta que el hijo acaba y devuelve su código de salida."},
+ {q:"new ProcessBuilder(\"programaquenoexiste\").start() …",o:["Devuelve null","Lanza IOException","Devuelve un Process con código 1","No hace nada"],a:1,e:"start() no puede crear el proceso y lanza IOException. Por eso va en un try/catch."},
+ {q:"¿Quién tiene el método start(): ProcessBuilder o Process?",o:["Process","ProcessBuilder","Los dos","Ninguno, es Runtime.exec"],a:1,e:"ProcessBuilder prepara y lanza (start). Process es el hijo ya en marcha: pid(), waitFor(), destroy()…"},
+ {q:"En PrimerProceso, «He lanzado un hijo» a veces sale antes de la versión de Java y a veces después. ¿Por qué?",o:["Es un fallo del programa","Padre e hijo se ejecutan a la vez y el planificador decide quién escribe antes","inheritIO cambia el orden a propósito","Porque waitFor va antes del println"],a:1,e:"Son dos procesos en paralelo. El orden de sus mensajes no está garantizado; solo lo que va después de waitFor() espera al hijo."}],
+r2:[
+ {q:"Con «java Par 7», ¿qué vale args[0]?",o:["El número 7","El texto \"7\"","\"Par\"","null"],a:1,e:"Los argumentos siempre llegan como texto. Para operar con él hay que hacer Integer.parseInt(args[0])."},
+ {q:"¿Por qué el padre usa String.valueOf(numero) al crear el ProcessBuilder?",o:["Para que vaya más rápido","Porque ProcessBuilder solo acepta textos","Para convertir a binario","No hace falta"],a:1,e:"Cada parte de la orden es un String. Un int no compila ahí."},
+ {q:"Si el main del hijo termina con return; en lugar de System.exit(1), el padre recibe…",o:["1","0","-1","Nada, se cuelga"],a:1,e:"Un main que acaba normalmente da código 0. Para devolver otro número hay que usar System.exit(n)."},
+ {q:"¿Para qué sirve \"-cp\", cp en la orden del hijo?",o:["Para copiar el fichero","Para que la nueva JVM sepa dónde están tus .class","Para compilar el hijo","Para darle permisos"],a:1,e:"cp es tu classpath (java.class.path). Sin él, el hijo puede dar «Could not find or load main class»."}],
+r3:[
+ {q:"¿Cuándo devuelve null br.readLine()?",o:["Cuando la línea está vacía","Cuando el hijo ha cerrado su salida (normalmente al terminar)","Cuando hay un error","Nunca"],a:1,e:"Una línea vacía devuelve \"\". null significa que ya no llegarán más datos: ahí acaba el while."},
+ {q:"¿Por qué se lee la salida ANTES de waitFor()?",o:["Por estilo","Porque si el hijo llena la tubería (unos 64 KB) se bloquea esperando a que leas, y tú estás esperando a que acabe","Porque después de waitFor la salida se borra","Porque waitFor cierra el lector"],a:1,e:"Es el bloqueo por tubería llena: los dos esperan al otro para siempre."},
+ {q:"Usas pb.inheritIO() y después p.inputReader().readLine(). ¿Qué obtienes?",o:["La primera línea del hijo","null: la salida ha ido a la consola, no a la tubería","Una excepción IOException","Todas las líneas juntas"],a:1,e:"inheritIO() conecta la salida del hijo a tu consola. La tubería queda vacía."},
+ {q:"¿Qué lees con p.errorReader()?",o:["Los errores de compilación","Lo que el hijo escribe con System.err","Las excepciones del padre","El código de salida"],a:1,e:"Es el tercer flujo estándar, stderr. En la calculadora del boletín (ej. 7) lo usas para los mensajes de error."}],
+r4:[
+ {q:"¿Cuándo da false sc.hasNextLine() en el hijo?",o:["Cuando la línea está vacía","Cuando su entrada se cierra (el padre cierra el writer)","A los 5 segundos","Nunca"],a:1,e:"Mientras la entrada esté abierta, hasNextLine() espera. Al cerrarla, da false y el bucle termina."},
+ {q:"Si el padre escribe pero no cierra el BufferedWriter…",o:["El hijo lee igual y termina","El hijo se queda esperando más líneas y el padre esperando su salida: se cuelga","Java lo cierra solo al momento","Da un error de compilación"],a:1,e:"Cerrar el flujo es la forma de decir «no hay más». Con try con recursos se cierra solo."},
+ {q:"¿Por qué w.newLine() después de w.write(\"hola\")?",o:["Para que quede bonito","Porque el hijo lee por líneas y sin salto no sabe que la línea ha terminado","Para cerrar el flujo","No hace falta"],a:1,e:"nextLine() y readLine() leen hasta el salto de línea."},
+ {q:"¿Qué orden de la terminal hace lo mismo que mandar un fichero al hijo con redirectInput?",o:["java Mayus > f.txt","java Mayus < f.txt","java Mayus | f.txt","java Mayus >> f.txt"],a:1,e:"< mete el fichero en la entrada del programa. > y >> son para la salida."}],
+r5:[
+ {q:"Tres dormilones de 1, 2 y 3 s lanzados con dos bucles. ¿Cuánto tarda más o menos el padre?",o:["1 s","3 s","6 s","9 s"],a:1,e:"Van en paralelo: lo que tarda el más lento, más un poco por arrancar cada JVM."},
+ {q:"¿Y si haces start() y waitFor() en el mismo bucle?",o:["3 s","6 s: van uno detrás de otro","Da error","1 s"],a:1,e:"El padre espera a cada hijo antes de lanzar el siguiente: 1 + 2 + 3 = 6 s."},
+ {q:"¿Para qué sirve la List<Process>?",o:["Para ordenar los procesos","Para guardar los hijos lanzados y poder esperarlos después","Para que vayan más rápido","Es obligatoria en Java"],a:1,e:"Si no los guardas, no tienes con qué hacer waitFor() en el segundo bucle."},
+ {q:"¿Salen siempre en el mismo orden los mensajes de los corredores?",o:["Sí, en orden de dorsal","No: cada uno tarda lo que le toca y el planificador decide","Sí, en orden de start","Solo en Windows"],a:1,e:"Son procesos independientes. El orden de llegada depende del tiempo de cada uno."}],
+r6:[
+ {q:"p.waitFor(3, TimeUnit.SECONDS) devuelve false. ¿Qué significa?",o:["El hijo terminó con error","Han pasado 3 s y el hijo sigue vivo","El hijo no existe","El código es 3"],a:1,e:"Con límite, waitFor devuelve un boolean: true si terminó a tiempo, false si no."},
+ {q:"¿Qué diferencia hay entre destroy() y destroyForcibly()?",o:["Ninguna","destroy pide terminar (SIGTERM, el hijo puede cerrar ordenadamente); destroyForcibly lo mata (SIGKILL)","destroy es más rápido","destroyForcibly solo existe en Windows"],a:1,e:"Por eso el patrón es: primero destroy(), dar un margen y, si sigue vivo, destroyForcibly()."},
+ {q:"En Linux, un hijo terminado con destroy() da el código…",o:["0","1","143 (128 + 15)","137 (128 + 9)"],a:2,e:"SIGTERM es la señal 15. Con destroyForcibly (SIGKILL, la 9) sería 137. En Windows suele salir 1."},
+ {q:"¿Por qué p.exitValue() justo después de start() lanza una excepción?",o:["Porque no existe ese método","Porque el hijo todavía no ha terminado","Porque falta inheritIO","Porque hay que usar pid()"],a:1,e:"exitValue() solo vale si ya terminó: IllegalThreadStateException."}],
+r7:[
+ {q:"¿Qué hace h.run() en vez de h.start()?",o:["Lo mismo","Ejecuta la tarea en el hilo main, como un método normal: no hay paralelismo","Lanza una excepción","Arranca el hilo dos veces"],a:1,e:"Solo start() crea el hilo nuevo. Es la pregunta trampa más típica del examen."},
+ {q:"¿Por qué el Thread.sleep dentro de la lambda va en un try/catch y no vale el throws del main?",o:["Por estilo","Porque Runnable.run() no declara excepciones: la lambda tiene que tratar InterruptedException ella misma","Porque sleep no lanza nada","Porque el main no tiene throws"],a:1,e:"El throws del main solo vale para el código del main. La lambda es otro método."},
+ {q:"¿Cuál es el equivalente de p.waitFor() con hilos?",o:["h.wait()","h.join()","h.sleep()","h.stop()"],a:1,e:"join() hace que quien lo llama espere a que ese hilo termine."},
+ {q:"Diferencia principal entre un hijo (proceso) y un hilo:",o:["Ninguna","El hilo comparte la memoria del programa y es mucho más barato de crear","El hilo es otro programa","El proceso comparte memoria"],a:1,e:"Por eso los hilos se comunican con variables, pero también se pueden pisar (nivel 9)."}],
+r8:[
+ {q:"¿Qué pasa si llamas a start() dos veces sobre el mismo hilo?",o:["Se ejecuta dos veces","IllegalThreadStateException","Nada","Se reinicia"],a:1,e:"Un hilo solo se arranca una vez. Si quieres repetir, crea otro Thread."},
+ {q:"Dentro de la lambda usas la i del for: System.out.println(\"Cocinero \" + i). ¿Qué pasa?",o:["Imprime 0, 1, 2","No compila: la variable tiene que ser final o effectively final","Imprime siempre 3","Funciona solo con join"],a:1,e:"i cambia en cada vuelta. Por eso se hace la copia int id = i + 1; y se usa id."},
+ {q:"Un hilo está en Thread.sleep(10_000) y el main llama a interrupt(). ¿Qué pasa?",o:["Nada, sigue durmiendo","Su sleep lanza InterruptedException y entra en el catch","El programa termina","El main se duerme"],a:1,e:"interrupt() es la forma educada de pedir a un hilo que pare."},
+ {q:"Con start() y join() en el mismo bucle, 3 cocineros de 0,6 s tardan…",o:["0,6 s","1,8 s: van de uno en uno","0,2 s","Da error"],a:1,e:"Es el mismo fallo que con procesos (nivel 5)."}],
+r9:[
+ {q:"Dos hilos hacen contador++ 100 000 veces cada uno sin sincronizar. El resultado…",o:["Siempre 200 000","Normalmente menos de 200 000, y cambia cada vez","Siempre 100 000","Más de 200 000"],a:1,e:"contador++ es leer, sumar y escribir. Si se mezclan, se pierden sumas: condición de carrera."},
+ {q:"¿Arregla volatile la carrera de contador++?",o:["Sí","No: volatile hace visible el valor, pero no hace atómica la operación","Solo con dos hilos","Solo en Windows"],a:1,e:"Hace falta synchronized, un Lock o AtomicInteger."},
+ {q:"Un hilo quiere entrar en un método synchronized que otro hilo está usando. ¿En qué estado queda?",o:["WAITING","BLOCKED","TIMED_WAITING","TERMINATED"],a:1,e:"BLOCKED es esperar el candado de un synchronized. WAITING es estar en wait() o join() sin límite."},
+ {q:"¿Qué es la sección crítica?",o:["La parte más lenta del programa","El trozo de código que usa datos compartidos y solo debe ejecutar un hilo a la vez","El main","El catch"],a:1,e:"Se protege con synchronized (o Lock, o variables atómicas)."}],
+r10:[
+ {q:"¿Por qué while (lleno) wait(); y no if (lleno) wait();?",o:["Por estilo","Al despertar hay que volver a comprobar: otro hilo puede haber llenado el hueco antes","Porque if no compila","Porque while es más rápido"],a:1,e:"notifyAll despierta a todos, pero solo uno consigue el hueco. Los demás tienen que volver a esperar."},
+ {q:"¿Qué hace wait() con el candado del objeto?",o:["Lo mantiene","Lo suelta mientras espera y lo vuelve a coger al despertar","Lo destruye","Lo pasa al main"],a:1,e:"Si no lo soltara, el otro hilo nunca podría entrar a cambiar la condición."},
+ {q:"¿Qué pasa si llamas a wait() fuera de un método synchronized?",o:["Funciona igual","IllegalMonitorStateException","Se queda dormido para siempre","No compila"],a:1,e:"Hay que tener el candado del objeto para poder esperar en él."},
+ {q:"Con BlockingQueue, ¿qué método espera si la cola está vacía?",o:["poll()","take()","peek()","remove()"],a:1,e:"put() espera si está llena y take() espera si está vacía. offer() y poll() no esperan."}],
+r11:[
+ {q:"new Semaphore(3) y 6 hilos hacen acquire(). ¿Cuántos pasan a la vez?",o:["6","3","1","0"],a:1,e:"Hay 3 permisos. Los otros 3 esperan a que alguien haga release()."},
+ {q:"¿Por qué release() va en un finally?",o:["Por estilo","Para que el permiso se devuelva siempre, aunque haya una excepción","Porque si no, no compila","Para que vaya más rápido"],a:1,e:"Si un hilo falla sin devolver el permiso, esa plaza se pierde para siempre."},
+ {q:"Interbloqueo es…",o:["Un hilo muy lento","Dos o más hilos que se esperan mutuamente y ninguno avanza nunca","Un hilo que nunca consigue el recurso aunque los demás avanzan","Un error de compilación"],a:1,e:"Lo tercero es inanición. En el interbloqueo nadie avanza."},
+ {q:"¿Cuál es la forma más fácil de evitar el interbloqueo de los tenedores?",o:["Quitar los synchronized","Que todos cojan los candados en el mismo orden","Usar más hilos","Poner sleep más largos"],a:1,e:"Así no puede haber espera circular, y sin una de las cuatro condiciones no hay interbloqueo."},
+ {q:"¿Qué hace pool.shutdown()?",o:["Mata las tareas en marcha","Deja de aceptar tareas nuevas; las que hay terminan","Espera a que acaben","Reinicia el pool"],a:1,e:"Para esperar se usa después awaitTermination(...)."}],
+r12:[
+ {q:"El hijo tiene que devolver «3,75». ¿Cómo?",o:["System.exit(3.75)","Lo escribe con println y el padre lo lee con inputReader()","Con return 3.75","Con una variable static"],a:1,e:"El código de salida solo es un entero pequeño. Para cualquier dato: escribir y leer."},
+ {q:"¿Qué afirmación es FALSA?",o:["start() es de ProcessBuilder","Dos procesos comparten las variables static","waitFor() devuelve el código de salida","Cada hijo tiene su PID"],a:1,e:"Cada proceso tiene su propia memoria. Comparten variables los HILOS del mismo proceso."},
+ {q:"Lanzas 4 hijos y quieres que trabajen a la vez. ¿Dónde va waitFor()?",o:["Justo después de cada start()","En un segundo bucle, cuando ya están todos lanzados","Antes de start()","No hace falta"],a:1,e:"Arrancar todos, después esperar a todos. Vale igual para hilos con join()."},
+ {q:"¿Qué estado tiene un hilo dentro de Thread.sleep(1000)?",o:["BLOCKED","TIMED_WAITING","WAITING","RUNNABLE"],a:1,e:"Espera con límite de tiempo: TIMED_WAITING."},
+ {q:"¿Qué método despierta a los hilos que hicieron wait() en un objeto?",o:["interrupt()","notifyAll()","join()","release()"],a:1,e:"notifyAll() (o notify(), que despierta a uno). Se llama dentro de synchronized."},
+ {q:"Un hilo está en join() sin límite esperando a otro. ¿Estado?",o:["WAITING","TIMED_WAITING","BLOCKED","NEW"],a:0,e:"Espera sin límite: WAITING. Con join(5000) sería TIMED_WAITING."},
+ {q:"El padre escribe al hijo y se cuelga. Lo más probable es que…",o:["Falte inheritIO","No haya cerrado el flujo de escritura","El hijo no tenga main","Falte -cp"],a:1,e:"Sin cerrar, el hijo sigue esperando más datos."},
+ {q:"¿Qué evita AtomicInteger?",o:["El interbloqueo","La condición de carrera al sumar un contador compartido","La inanición","El bloqueo por tubería"],a:1,e:"incrementAndGet() hace los tres pasos de una vez, sin que se cuele otro hilo."}]
+});
+
+/* ---------- calendario y lista final ---------- */
+const CAL=[
+ ["Sáb 31 oct","Empieza aquí + Nivel 1","r1"],
+ ["Dom 1 nov","Niveles 2 y 3","r3"],
+ ["Lun 2 nov","Niveles 4 y 5","r5"],
+ ["Mar 3 nov","Niveles 6 y 7","r7"],
+ ["Mié 4 nov","Por la mañana, Nivel 8. Clase: sincronización","r8"],
+ ["Jue 5 nov","Nivel 9 (lo de la clase de ayer)","r9"],
+ ["Vie 6 – Dom 8 nov","Boletín del Tema 1, ejercicios 5 a 8, en tu PC","r12"],
+ ["Lun 9 – Mar 10 nov","Nivel 10 (antes de la clase)","r10"],
+ ["Mié 11 nov","Clase: productor-consumidor y semáforos","t1"],
+ ["Jue 12 – Vie 13 nov","Nivel 11","r11"],
+ ["Sáb 14 – Dom 15 nov","Boletín del Tema 1, ejercicios 9 y 10","r12"],
+ ["Lun 16 – Mar 17 nov","Repaso del Tema 2 en la web (bloques TID 1 a 6)","t1"],
+ ["18 – 25 nov","En clase empieza el Tema 3 (redes). Aparte, 20 min al día: un jefe de memoria","r12"],
+ ["26 nov – 1 dic","Simulacro: lista «sin mirar» y test final","r12"],
+ ["Mié 2 dic","Prueba de la 1.ª evaluación","r12"]];
+const RCHK=[
+ "Lanzar un programa con ProcessBuilder, esperar y leer el código de salida",
+ "Elegir la orden según el sistema con os.name",
+ "Padre que lanza un hijo Java con -cp y argumentos; hijo con parseInt y System.exit",
+ "Leer la salida del hijo con inputReader() y el bucle while readLine != null",
+ "Escribir en la entrada del hijo con outputWriter() y cerrarla",
+ "Lanzar N hijos a la vez con List<Process> y dos bucles",
+ "waitFor con límite, destroy y destroyForcibly",
+ "Crear un hilo con lambda, start y join",
+ "N hilos con un array, copia de i y tres bucles",
+ "Arreglar una carrera con synchronized o AtomicInteger",
+ "Productor-consumidor con wait/notifyAll (y con BlockingQueue)",
+ "Semáforo con acquire/release en finally",
+ "ExecutorService: submit, shutdown y awaitTermination",
+ "Explicar interbloqueo, sus 4 condiciones y cómo evitarlo"];
+
+/* ---------- resaltado de código ---------- */
+function hl(src){
+  const re=/(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*")|\b(public|private|static|final|void|new|int|long|boolean|for|while|if|else|try|catch|finally|return|throws|class|import|synchronized|true|false|null)\b/g;
+  let out="",last=0,m;
+  while((m=re.exec(src))){out+=esc(src.slice(last,m.index));
+    if(m[1])out+=`<span class="c">${esc(m[1])}</span>`;else if(m[2])out+=`<span class="s">${esc(m[2])}</span>`;else out+=`<b>${m[3]}</b>`;
+    last=re.lastIndex;}
+  return out+esc(src.slice(last));
+}
+function fillCode(){document.querySelectorAll("pre[data-src]").forEach(p=>{const c=CODE[p.dataset.src];if(c)p.innerHTML=hl(c);});}
+
+/* ---------- widget: ordenar líneas ---------- */
+function seeded(n,seed){const a=[...Array(n).keys()];let s=seed;for(let i=n-1;i>0;i--){s=(s*9301+49297)%233280;const j=Math.floor(s/233280*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  if(a.every((v,i)=>v===i))a.reverse();return a;}
+function renderPars(host,id){
+  const P=PARS[id];host.className="ex";
+  const seed=[...id].reduce((s,c)=>s+c.charCodeAt(0),7);
+  const shuffled=seeded(P.lines.length,seed);
+  let saved=(S.pars||{})[id];let prog=saved&&Array.isArray(saved.o)?saved.o.filter(i=>i<P.lines.length):[];
+  host.innerHTML=`<div class="ex-title">${esc(P.t)}</div><p class="ex-desc">${esc(P.d)}</p>
+  <div class="pars"><div><div class="pars-h">Piezas</div><div class="pars-pool"></div></div><div><div class="pars-h">Tu programa</div><div class="pars-prog"></div></div></div>
+  <div class="row"><button class="btn">Comprobar</button><button class="btn ghost" data-a="hint">Pista</button><button class="btn ghost" data-a="clr">Empezar de nuevo</button><span class="status"></span></div>`;
+  const pool=host.querySelector(".pars-pool"),pg=host.querySelector(".pars-prog"),st=host.querySelector(".status");
+  let marks=null;
+  function store(ok){S.pars=S.pars||{};S.pars[id]={o:prog,ok:!!ok||!!(S.pars[id]&&S.pars[id].ok&&prog.length===P.lines.length)};save();}
+  function line(i,where,k){const b=document.createElement("button");b.className="pline";b.type="button";
+    b.innerHTML=`<code>${esc(P.lines[i]).replace(/^( +)/,m=>"&nbsp;".repeat(m.length))}</code>`;
+    if(where==="prog"&&marks)b.classList.add(marks[k]?"ok":"ko");
+    b.onclick=()=>{marks=null;st.textContent="";st.className="status";
+      if(where==="pool")prog.push(i);else prog.splice(k,1);store(false);paint();};
+    return b;}
+  function paint(){pool.innerHTML="";pg.innerHTML="";
+    shuffled.filter(i=>!prog.includes(i)).forEach(i=>pool.appendChild(line(i,"pool")));
+    prog.forEach((i,k)=>pg.appendChild(line(i,"prog",k)));
+    if(!prog.length)pg.innerHTML=`<div class="pars-empty">Pulsa las piezas en orden y aparecerán aquí</div>`;
+    if(prog.length===P.lines.length&&!pool.children.length)pool.innerHTML=`<div class="pars-empty">No quedan piezas</div>`;}
+  function check(){
+    marks=prog.map((i,k)=>P.lines[i]===P.lines[k]);
+    const ok=marks.filter(Boolean).length,all=ok===P.lines.length&&prog.length===P.lines.length;
+    st.textContent=all?"Perfecto: el programa está en orden":prog.length<P.lines.length?`${ok}/${prog.length} bien colocadas · faltan ${P.lines.length-prog.length} piezas`:`${ok}/${P.lines.length} en su sitio`;
+    st.className="status "+(all?"ok":"ko");store(all);paint();}
+  host.querySelector(".btn").onclick=check;
+  host.querySelector('[data-a="hint"]').onclick=()=>{
+    let k=0;while(k<prog.length&&P.lines[prog[k]]===P.lines[k])k++;
+    prog=prog.slice(0,k);const want=P.lines[k];
+    if(k>=P.lines.length){st.textContent="Ya está todo bien";return;}
+    const idx=shuffled.find(i=>!prog.includes(i)&&P.lines[i]===want);prog.push(idx);marks=null;
+    st.textContent=`Pista: la línea ${k+1} es la que acabo de añadir`;st.className="status";store(false);paint();};
+  host.querySelector('[data-a="clr"]').onclick=()=>{prog=[];marks=null;st.textContent="";S.pars=S.pars||{};S.pars[id]={o:[],ok:false};save();paint();};
+  paint();if(saved&&saved.ok){st.textContent="Hecho";st.className="status ok";}
+}
+
+/* ---------- widget: caza el fallo ---------- */
+function renderBug(host,id){
+  const B=BUGS[id];host.className="ex";
+  host.innerHTML=`<div class="ex-title">Caza el fallo</div><p class="ex-desc">${esc(B.d)} Pulsa la línea que está mal.</p><div class="bug"></div><div class="verdict-host"></div>`;
+  const box=host.querySelector(".bug"),vh=host.querySelector(".verdict-host");
+  let tries=0;
+  B.code.forEach((l,k)=>{const b=document.createElement("button");b.type="button";b.className="bline";
+    b.innerHTML=`<span class="ln">${k+1}</span><code>${hl(l)||"&nbsp;"}</code>`;
+    if(!l.trim()){b.disabled=true;}
+    b.onclick=()=>{tries++;
+      if(B.bad.includes(k)){box.querySelectorAll(".bline").forEach((x,j)=>{x.classList.remove("ko");if(B.bad.includes(j))x.classList.add("ok");});
+        done();S.bug=S.bug||{};S.bug[id]={ok:true};save();renderNav(current);}
+      else{b.classList.add("ko");vh.innerHTML=`<div class="verdict ko"><b>Esa línea está bien.</b> ${tries>=2?"Pista: lee otra vez el mensaje de error del enunciado.":"Prueba con otra."}</div>`;}};
+    box.appendChild(b);});
+  function done(){vh.innerHTML=`<div class="verdict ok"><b>¡Encontrado!</b> ${esc(B.why)}</div><pre class="code">${hl(B.fix)}</pre>`;}
+  if(S.bug&&S.bug[id]&&S.bug[id].ok){box.querySelectorAll(".bline").forEach((x,j)=>{if(B.bad.includes(j))x.classList.add("ok");});done();}
+}
+
+/* ---------- mapa de niveles, calendario y lista ---------- */
+function blockItems(id){
+  const sec=document.querySelector(`main>section[data-block="${id}"]`);if(!sec)return[];
+  const it=[];
+  sec.querySelectorAll("[data-pars]").forEach(e=>it.push(()=>!!(S.pars&&S.pars[e.dataset.pars]&&S.pars[e.dataset.pars].ok)));
+  sec.querySelectorAll("[data-gaps]").forEach(e=>it.push(()=>!!(S.gaps[e.dataset.gaps]&&S.gaps[e.dataset.gaps].ok)));
+  sec.querySelectorAll("[data-bug]").forEach(e=>it.push(()=>!!(S.bug&&S.bug[e.dataset.bug]&&S.bug[e.dataset.bug].ok)));
+  sec.querySelectorAll("[data-free]").forEach(e=>it.push(()=>!!(S.free[e.dataset.free]&&S.free[e.dataset.free].ok)));
+  sec.querySelectorAll("[data-quiz]").forEach(e=>{const q=e.dataset.quiz;it.push(()=>QUIZ[q].every((x,i)=>S.quiz[q+"-"+i]!==undefined));});
+  return it;
+}
+function levelProgress(id){const it=blockItems(id);return{n:it.length,ok:it.filter(f=>f()).length};}
+function renderMap(){
+  const h=document.getElementById("rmap");if(!h)return;
+  let next=null;
+  h.innerHTML="";
+  RUTA_BLOCKS.slice(1).forEach((b,i)=>{
+    const p=levelProgress(b.id);const full=p.n&&p.ok===p.n||S.done[b.id];
+    if(!full&&!next)next=b.id;
+    const el=document.createElement("button");el.type="button";el.className="lvl"+(full?" done":"")+(b.id===next?" next":"");
+    const lab=b.id==="r12"?"FINAL":"NIVEL "+(i+1);
+    el.innerHTML=`<span class="lvl-n">${lab}${b.id===next?" · TOCA AHORA":""}</span><span class="lvl-t">${esc(b.name)}</span><span class="lvl-bar"><i style="width:${p.n?Math.round(p.ok/p.n*100):0}%"></i></span><span class="lvl-s">${full?"✓ superado":`${p.ok}/${p.n} ejercicios`}</span>`;
+    el.onclick=()=>show(b.id,true);h.appendChild(el);
+  });
+}
+function renderCal(){
+  const t=document.getElementById("rcal");if(!t)return;S.cal=S.cal||{};
+  t.innerHTML=`<tr><th>Cuándo</th><th>Qué hacer</th><th>Hecho</th></tr>`+CAL.map(([d,w,l],i)=>`<tr><td style="white-space:nowrap"><b>${esc(d)}</b></td><td><a href="#${l}" data-go="${l}">${esc(w)}</a></td><td><input type="checkbox" class="calck" data-i="${i}" ${S.cal[i]?"checked":""} aria-label="Hecho: ${esc(d)}"></td></tr>`).join("");
+  t.querySelectorAll("a[data-go]").forEach(a=>a.onclick=e=>{e.preventDefault();show(a.dataset.go,true);});
+  t.querySelectorAll(".calck").forEach(c=>c.onchange=()=>{S.cal[c.dataset.i]=c.checked;save();});
+}
+function renderRchk(){
+  const h=document.getElementById("rchk");if(!h)return;S.rchk=S.rchk||{};
+  h.innerHTML=RCHK.map((c,i)=>`<label class="rchk"><input type="checkbox" data-i="${i}" ${S.rchk[i]?"checked":""}><span>${esc(c)}</span></label>`).join("")+`<p class="status" id="rchkS"></p>`;
+  const upd=()=>{const n=RCHK.filter((_,i)=>S.rchk[i]).length;document.getElementById("rchkS").textContent=`${n}/${RCHK.length} de memoria`+(n===RCHK.length?" · listo para el examen":"");};
+  h.querySelectorAll("input").forEach(c=>c.onchange=()=>{S.rchk[c.dataset.i]=c.checked;save();upd();});upd();
+}
+
 /* ---------- arranque ---------- */
+fillCode();
+document.querySelectorAll("[data-pars]").forEach(h=>renderPars(h,h.dataset.pars));
+document.querySelectorAll("[data-bug]").forEach(h=>renderBug(h,h.dataset.bug));
+renderCal();renderRchk();
 document.querySelectorAll("[data-quiz]").forEach(h=>renderQuiz(h,h.dataset.quiz));
 document.querySelectorAll("[data-gaps]").forEach(h=>renderGaps(h,h.dataset.gaps));
 document.querySelectorAll("[data-free]").forEach(h=>renderFree(h,h.dataset.free));
@@ -1869,7 +4264,7 @@ document.getElementById("sRun").onclick=runSim;
 document.getElementById("sPreset").onchange=e=>{loadPreset(e.target.value);if(e.target.value)runSim();};
 document.getElementById("sPractice").onchange=runSim;
 loadPreset("e6b");runSim();
-let start="b1";
+let start="r0";
 const h=(location.hash||"").slice(1);if(BLOCKS.some(b=>b.id===h))start=h;
 else{try{const t=localStorage.getItem("psp-t1-tab");if(t&&BLOCKS.some(b=>b.id===t))start=t;}catch(e){}}
 show(start,false);updateProgress();
