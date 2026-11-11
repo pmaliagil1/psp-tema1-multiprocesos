@@ -3433,7 +3433,7 @@ checks:[
  rx(/System\.exit\s*\(\s*0\s*\)/,"System.exit(0) para mayor de edad"),
  rx(/System\.exit\s*\(\s*1\s*\)/,"System.exit(1) para menor"),
  rx(/catch\s*\(\s*NumberFormatException[\s\S]*?System\.exit\s*\(\s*2\s*\)/,"System.exit(2) dentro del catch de NumberFormatException"),
- rx(/new\s+ProcessBuilder\s*\(\s*"java"\s*,\s*"-cp"\s*,\s*cp\s*,\s*"Portero"\s*,\s*edad\s*\)/,"Discoteca lanza \"java\", \"-cp\", cp, \"Portero\", edad"),
+ rx(/new\s+ProcessBuilder\s*\(\s*"java"\s*,\s*"-cp"\s*,\s*\w+\s*,\s*"Portero"\s*,\s*\w+\s*\)/,"Discoteca lanza \"java\", \"-cp\", cp, \"Portero\", edad"),
  rx(/\.start\s*\(\s*\)[\s\S]*\.waitFor\s*\(\s*\)/,"Lanza y espera el código con waitFor()"),
  rx(/else\s+if/,"Distingue los tres casos con if / else if / else"),
  rx(/"[^"]*no válido[^"]*"|"[^"]*no valido[^"]*"/i,"Muestra «dato no válido» para el código 2")],
